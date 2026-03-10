@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>EF Core integration for ParadeDB pg_search BM25 full-text search indexes on PostgreSQL. Provides a [Bm25Index] attribute and UseParadeDb() extension for automatic index creation via EF Core conventions.</Description>
+        <PackageId>Equibles.ParadeDB.EntityFrameworkCore</PackageId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    </ItemGroup>
+
+</Project>
