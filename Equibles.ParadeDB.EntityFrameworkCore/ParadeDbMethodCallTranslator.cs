@@ -133,7 +133,7 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
             return MakeBinaryBool(arguments[1], "===", arguments[2]);
 
         if (method == MatchesTermSetMethod)
-            return MakeBinaryBool(arguments[1], "===", MakeArrayFragment(arguments[2]));
+            return MakeBinaryBool(arguments[1], "===", arguments[2]);
 
         // ── Fuzzy Search ──────────────────────────────────────────
         if (method == MatchesFuzzyMethod)
@@ -231,7 +231,7 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
 
         // ── Phrase Prefix ─────────────────────────────────────────
         if (method == PhrasePrefixMethod) {
-            var phrasePrefixFunc = _sql.Function("pdb.phrase_prefix", [MakeArrayFragment(arguments[2])],
+            var phrasePrefixFunc = _sql.Function("pdb.phrase_prefix", [arguments[2]],
                 nullable: true, argumentsPropagateNullability: [true],
                 typeof(bool), _typeMappingSource.FindMapping(typeof(bool)));
             return MakeBinaryBool(arguments[1], "@@@", phrasePrefixFunc);
@@ -239,7 +239,7 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
 
         if (method == PhrasePrefixMaxMethod) {
             var phrasePrefixFunc = new ParadeDbNamedArgFunctionExpression("pdb.phrase_prefix",
-                [MakeArrayFragment(arguments[3])],
+                [arguments[3]],
                 [("max_expansions", arguments[2])],
                 typeof(bool), _typeMappingSource.FindMapping(typeof(bool)));
             return MakeBinaryBool(arguments[1], "@@@", phrasePrefixFunc);
@@ -254,7 +254,7 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
         }
 
         if (method == MoreLikeThisFieldsMethod) {
-            var mltFunc = _sql.Function("pdb.more_like_this", [arguments[2], MakeArrayFragment(arguments[3])],
+            var mltFunc = _sql.Function("pdb.more_like_this", [arguments[2], arguments[3]],
                 nullable: true, argumentsPropagateNullability: [true, true],
                 typeof(bool), _typeMappingSource.FindMapping(typeof(bool)));
             return MakeBinaryBool(arguments[1], "@@@", mltFunc);
@@ -270,15 +270,6 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
 
     private SqlExpression WithModifier(SqlExpression inner, string suffix) =>
         new ParadeDbModifiedQueryExpression(inner, suffix, inner.Type, inner.TypeMapping);
-
-    private static SqlFragmentExpression MakeArrayFragment(SqlExpression arrayArg) {
-        if (arrayArg is not SqlConstantExpression constant || constant.Value is not object[] values)
-            throw new InvalidOperationException(
-                "ParadeDB array arguments (MatchesTermSet, PhrasePrefix, MoreLikeThis fields) require compile-time constant arrays.");
-
-        var elements = string.Join(", ", values.Select(v => $"'{v}'"));
-        return new SqlFragmentExpression($"ARRAY[{elements}]");
-    }
 
     private static int ExtractInt(SqlExpression expr) =>
         expr is SqlConstantExpression { Value: int value }
