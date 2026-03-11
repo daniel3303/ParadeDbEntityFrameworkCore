@@ -65,6 +65,7 @@ var results = await dbContext.Articles
     .Where(a => EF.Functions.Matches(a.Content, "machine learning"))
     .ToListAsync();
 ```
+
 ```sql
 SELECT * FROM "Articles" WHERE "Content" ||| 'machine learning'
 ```
@@ -78,6 +79,7 @@ var results = await dbContext.Articles
     .Where(a => EF.Functions.MatchesAll(a.Content, "machine learning"))
     .ToListAsync();
 ```
+
 ```sql
 SELECT * FROM "Articles" WHERE "Content" &&& 'machine learning'
 ```
@@ -97,6 +99,7 @@ var results = await dbContext.Articles
     .Where(a => EF.Functions.MatchesPhrase(a.Content, "neural networks", 2))
     .ToListAsync();
 ```
+
 ```sql
 -- Exact phrase
 SELECT * FROM "Articles" WHERE "Content" ### 'neural networks'
@@ -120,6 +123,7 @@ var results = await dbContext.Articles
     .Where(a => EF.Functions.MatchesTermSet(a.Content, "gpu", "tpu", "npu"))
     .ToListAsync();
 ```
+
 ```sql
 SELECT * FROM "Articles" WHERE "Content" === 'gpu'
 SELECT * FROM "Articles" WHERE "Content" === ARRAY['gpu', 'tpu', 'npu']
@@ -153,6 +157,7 @@ var results = await dbContext.Articles
     .Where(a => EF.Functions.MatchesTermFuzzy(a.Content, "machin", 1))
     .ToListAsync();
 ```
+
 ```sql
 SELECT * FROM "Articles" WHERE "Content" ||| 'machin'::pdb.fuzzy(2)
 SELECT * FROM "Articles" WHERE "Content" ||| 'machin'::pdb.fuzzy(2, true, false)
@@ -180,6 +185,7 @@ var results = await dbContext.Articles
     .Where(a => EF.Functions.MatchesFuzzyBoosted(a.Title, "transfomers", 2, 2.0))
     .ToListAsync();
 ```
+
 ```sql
 SELECT * FROM "Articles" WHERE "Title" ||| 'transformers'::pdb.boost(2)
 SELECT * FROM "Articles" WHERE "Content" &&& 'attention mechanism'::pdb.boost(1.5)
@@ -202,6 +208,7 @@ var results = await dbContext.Articles
     .Take(10)
     .ToListAsync();
 ```
+
 ```sql
 SELECT "Title", pdb.score("Id") AS "Score"
 FROM "Articles"
@@ -245,6 +252,7 @@ var results = await dbContext.Articles
     })
     .ToListAsync();
 ```
+
 ```sql
 SELECT "Title", pdb.snippet("Content") AS "Snippet" FROM "Articles" WHERE ...
 SELECT "Title", pdb.snippet("Content", start_tag => '<b>', end_tag => '</b>', max_num_chars => 100) AS "Snippet" FROM "Articles" WHERE ...
@@ -269,6 +277,7 @@ var results = await dbContext.Articles
     .Where(a => EF.Functions.Parse(a.Id, "transformers attention", true, true))
     .ToListAsync();
 ```
+
 ```sql
 SELECT * FROM "Articles" WHERE "Id" @@@ pdb.parse('title:transformers AND content:attention')
 SELECT * FROM "Articles" WHERE "Id" @@@ pdb.parse('transformers attention', lenient => TRUE, conjunction_mode => TRUE)
@@ -283,6 +292,7 @@ var results = await dbContext.Articles
     .Where(a => EF.Functions.Regex(a.Content, "neuro.*"))
     .ToListAsync();
 ```
+
 ```sql
 SELECT * FROM "Articles" WHERE "Content" @@@ pdb.regex('neuro.*')
 ```
@@ -302,6 +312,7 @@ var results = await dbContext.Articles
     .Where(a => EF.Functions.PhrasePrefix(a.Content, 10, "running", "sh"))
     .ToListAsync();
 ```
+
 ```sql
 SELECT * FROM "Articles" WHERE "Content" @@@ pdb.phrase_prefix(ARRAY['running', 'sh'])
 SELECT * FROM "Articles" WHERE "Content" @@@ pdb.phrase_prefix(ARRAY['running', 'sh'], max_expansions => 10)
@@ -322,6 +333,7 @@ var results = await dbContext.Articles
     .Where(a => EF.Functions.MoreLikeThis(a.Id, 3, "description"))
     .ToListAsync();
 ```
+
 ```sql
 SELECT * FROM "Articles" WHERE "Id" @@@ pdb.more_like_this(3)
 SELECT * FROM "Articles" WHERE "Id" @@@ pdb.more_like_this(3, ARRAY['description'])
