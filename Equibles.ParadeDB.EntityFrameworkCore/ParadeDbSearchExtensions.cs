@@ -15,6 +15,15 @@ public static class ParadeDbSearchExtensions {
         .GetMethod(nameof(ParadeDbFunctions.Score), [typeof(DbFunctions), typeof(object)])!;
 
     /// <summary>
+    /// Adds a WHERE clause with a ParadeDB boolean JSON query built inline.
+    /// Translates to: <c>keyField @@@ 'json'::pdb.query</c>.
+    /// </summary>
+    public static IQueryable<T> JsonSearch<T>(this IQueryable<T> source,
+        Expression<Func<T, object>> keyField, Action<ParadeDbBooleanQuery> configure) where T : class {
+        return source.JsonSearch(keyField, ParadeDbJsonQuery.Boolean(configure));
+    }
+
+    /// <summary>
     /// Adds a WHERE clause with a ParadeDB JSON query.
     /// Translates to: <c>keyField @@@ 'json'::pdb.query</c>.
     /// </summary>

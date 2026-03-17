@@ -294,6 +294,16 @@ public class QueryTranslationTests : IDisposable {
         Assert.Contains("@@@", sqlDirect);
     }
 
+    [Fact]
+    public void JsonSearch_inline_boolean_generates_correct_sql() {
+        var sql = Sql(_db.Chunks.JsonSearch(c => c.Id, b => b
+            .Must(
+                ParadeDbJsonQuery.Parse("revenue growth"),
+                ParadeDbJsonQuery.Term("DocumentType", 10))));
+        Assert.Contains("@@@", sql);
+        Assert.Contains("::pdb.query", sql);
+    }
+
     // ── Combining with LINQ ───────────────────────────────────────────
 
     [Fact]

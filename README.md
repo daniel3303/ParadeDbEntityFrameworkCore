@@ -366,6 +366,17 @@ var results = await dbContext.Chunks
     .OrderByScoreDescending(c => c.Id)
     .Take(5)
     .ToListAsync();
+
+// Option 3: Inline boolean builder
+var results = await dbContext.Chunks
+    .JsonSearch(c => c.Id, b => b
+        .Must(
+            ParadeDbJsonQuery.Parse("revenue growth"),
+            ParadeDbJsonQuery.Term("DocumentId", documentId),
+            ParadeDbJsonQuery.Term("DocumentType", 10)))
+    .OrderByScoreDescending(c => c.Id)
+    .Take(5)
+    .ToListAsync();
 ```
 
 ```sql
