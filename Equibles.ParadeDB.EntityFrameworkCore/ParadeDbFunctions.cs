@@ -214,4 +214,14 @@ public static class ParadeDbFunctions {
     /// </summary>
     public static bool MoreLikeThis(this DbFunctions _, object keyField, int documentId, params string[] fields)
         => throw new InvalidOperationException(OnlyInLinq);
+
+    // ── JSON Query Search ────────────────────────────────────────────
+
+    /// <summary>
+    /// JSON query search. Translates to: keyField @@@ 'jsonQuery'::pdb.query.
+    /// Executes a structured query using ParadeDB's JSON query syntax.
+    /// Build the query string using <see cref="ParadeDbJsonQuery"/>.
+    /// </summary>
+    public static bool JsonSearch(this DbFunctions _, object keyField, string jsonQuery)
+        => throw new InvalidOperationException(OnlyInLinq);
 }

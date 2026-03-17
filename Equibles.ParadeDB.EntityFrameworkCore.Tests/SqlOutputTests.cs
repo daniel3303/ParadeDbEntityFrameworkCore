@@ -12,6 +12,19 @@ public class SqlOutputTests : IDisposable {
 
     private string Sql(IQueryable query) => query.ToQueryString();
 
+    private IQueryable<Chunk> JsonSearchQuery() {
+        var json = ParadeDbJsonQuery.Parse("revenue growth").ToJson();
+        return _db.Chunks.Where(c => EF.Functions.JsonSearch(c.Id, json));
+    }
+
+    private IQueryable<Chunk> JsonSearchBooleanQuery() {
+        var json = ParadeDbJsonQuery.Boolean(b => b
+            .Must(
+                ParadeDbJsonQuery.Parse("revenue growth"),
+                ParadeDbJsonQuery.Term("DocumentType", 10))).ToJson();
+        return _db.Chunks.Where(c => EF.Functions.JsonSearch(c.Id, json));
+    }
+
     [Fact]
     public void Print_all_query_translations() {
         var queries = new (string Label, string Sql)[] {
@@ -40,6 +53,13 @@ public class SqlOutputTests : IDisposable {
             ("PhrasePrefix+max", Sql(_db.Articles.Where(a => EF.Functions.PhrasePrefix(a.Content, 10, "running", "sh")))),
             ("MoreLikeThis", Sql(_db.Articles.Where(a => EF.Functions.MoreLikeThis(a.Id, 3)))),
             ("MoreLikeThis+fields", Sql(_db.Articles.Where(a => EF.Functions.MoreLikeThis(a.Id, 3, "description")))),
+            ("JsonSearch", Sql(JsonSearchQuery())),
+            ("JsonSearch+boolean", Sql(JsonSearchBooleanQuery())),
+            ("JsonSearch+extension", Sql(_db.Chunks.JsonSearch(c => c.Id, ParadeDbJsonQuery.Parse("test")))),
+            ("JsonSearch+score+limit", Sql(_db.Chunks
+                .JsonSearch(c => c.Id, ParadeDbJsonQuery.Parse("test"))
+                .OrderByScoreDescending(c => c.Id)
+                .Take(5))),
         };
 
         foreach (var (label, sql) in queries) {

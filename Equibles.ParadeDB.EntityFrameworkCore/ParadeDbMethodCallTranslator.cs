@@ -105,6 +105,10 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
     private static readonly MethodInfo MoreLikeThisFieldsMethod = typeof(ParadeDbFunctions)
         .GetMethod(nameof(ParadeDbFunctions.MoreLikeThis), [typeof(DbFunctions), typeof(object), typeof(int), typeof(string[])])!;
 
+    // ── JSON Query Search ──────────────────────────────────────────
+    private static readonly MethodInfo JsonSearchMethod = typeof(ParadeDbFunctions)
+        .GetMethod(nameof(ParadeDbFunctions.JsonSearch), [typeof(DbFunctions), typeof(object), typeof(string)])!;
+
     public ParadeDbMethodCallTranslator(ISqlExpressionFactory sql, IRelationalTypeMappingSource typeMappingSource) {
         _sql = sql;
         _typeMappingSource = typeMappingSource;
@@ -258,6 +262,14 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
                 nullable: true, argumentsPropagateNullability: [true, true],
                 typeof(bool), _typeMappingSource.FindMapping(typeof(bool)));
             return MakeBinaryBool(arguments[1], "@@@", mltFunc);
+        }
+
+        // ── JSON Query Search ──────────────────────────────────────
+        if (method == JsonSearchMethod) {
+            var jsonExpr = Map(arguments[2]);
+            var castExpr = new ParadeDbModifiedQueryExpression(
+                jsonExpr, "::pdb.query", jsonExpr.Type, jsonExpr.TypeMapping);
+            return MakeBinaryBool(arguments[1], "@@@", castExpr);
         }
 
         return null;

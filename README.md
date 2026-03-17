@@ -339,6 +339,68 @@ SELECT * FROM "Articles" WHERE "Id" @@@ pdb.more_like_this(3)
 SELECT * FROM "Articles" WHERE "Id" @@@ pdb.more_like_this(3, ARRAY['description'])
 ```
 
+### JSON Query Search
+
+For complex queries combining full-text search with term filters, use `ParadeDbJsonQuery` to build structured JSON queries. This translates to the `@@@` operator with `::pdb.query` cast.
+
+```csharp
+// Build a boolean query combining parse + term filters
+var query = ParadeDbJsonQuery.Boolean(b => b
+    .Must(
+        ParadeDbJsonQuery.Parse("revenue growth"),
+        ParadeDbJsonQuery.Term("DocumentId", documentId),
+        ParadeDbJsonQuery.Term("DocumentType", 10)));
+
+// Option 1: Using EF.Functions directly
+var results = await dbContext.Chunks
+    .Where(c => EF.Functions.JsonSearch(c.Id, query.ToJson()))
+    .OrderByDescending(c => EF.Functions.Score(c.Id))
+    .Take(5)
+    .ToListAsync();
+
+// Option 2: Using IQueryable extensions
+var results = await dbContext.Chunks
+    .JsonSearch(c => c.Id, query)
+    .OrderByScoreDescending(c => c.Id)
+    .Take(5)
+    .ToListAsync();
+```
+
+```sql
+SELECT * FROM "Chunks"
+WHERE "Id" @@@ '{"boolean":{"must":[
+    {"parse":{"query_string":"revenue growth"}},
+    {"term":{"field":"DocumentId","value":"..."}},
+    {"term":{"field":"DocumentType","value":10}}
+]}}'::pdb.query
+ORDER BY pdb.score("Id") DESC
+LIMIT 5
+```
+
+Available query types:
+
+| Factory Method | JSON Output |
+|----------------|-------------|
+| `Parse("query")` | `{"parse":{"query_string":"query"}}` |
+| `Parse("query", lenient, conjunctionMode)` | With optional flags |
+| `Term("field", value)` | `{"term":{"field":"...","value":...}}` |
+| `TermSet("field", values...)` | `{"term_set":{"field":"...","terms":[...]}}` |
+| `Match("value")` | `{"match":{"value":"..."}}` |
+| `Match("value", "field", distance, conjunctionMode)` | With options |
+| `FuzzyTerm("field", "value", distance)` | `{"fuzzy_term":{"field":"...","value":"...","distance":N}}` |
+| `Phrase("field", phrases...)` | `{"phrase":{"field":"...","phrases":[...]}}` |
+| `Phrase("field", slop, phrases...)` | With slop |
+| `PhrasePrefix("field", phrases...)` | `{"phrase_prefix":{"field":"...","phrases":[...]}}` |
+| `Regex("field", "pattern")` | `{"regex":{"field":"...","pattern":"..."}}` |
+| `Range("field", lower, upper, lowerInclusive, upperInclusive)` | Bound objects with included/excluded |
+| `Boost(query, factor)` | `{"boost":{"query":{...},"factor":N}}` |
+| `ConstScore(query, score)` | `{"const_score":{"query":{...},"score":N}}` |
+| `Exists("field")` | `{"exists":{"field":"..."}}` |
+| `All()` | `{"all":null}` |
+| `DisjunctionMax(queries...)` | `{"disjunction_max":{"disjuncts":[...]}}` |
+| `MoreLikeThis(documentId)` | `{"more_like_this":{"document_id":N}}` |
+| `Boolean(b => b.Must(...).Should(...).MustNot(...))` | Boolean combinations |
+
 ### Combining with LINQ
 
 All search methods compose naturally with standard LINQ:
@@ -402,6 +464,7 @@ LINQ methods on `EF.Functions` are translated to SQL via `IMethodCallTranslatorP
 | `PhrasePrefix(col, 10, "running", "sh")` | `col @@@ pdb.phrase_prefix(ARRAY['running', 'sh'], max_expansions => 10)` |
 | `MoreLikeThis(id, 3)` | `id @@@ pdb.more_like_this(3)` |
 | `MoreLikeThis(id, 3, "description")` | `id @@@ pdb.more_like_this(3, ARRAY['description'])` |
+| `JsonSearch(id, jsonQuery)` | `id @@@ 'jsonQuery'::pdb.query` |
 
 ## License
 

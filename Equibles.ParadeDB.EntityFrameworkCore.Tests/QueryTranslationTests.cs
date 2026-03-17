@@ -231,6 +231,69 @@ public class QueryTranslationTests : IDisposable {
         Assert.Contains("pdb.more_like_this(", sql);
     }
 
+    // ── JSON Query Search ──────────────────────────────────────────────
+
+    [Fact]
+    public void JsonSearch_generates_at_operator_with_pdb_query_cast() {
+        var json = ParadeDbJsonQuery.Parse("revenue growth").ToJson();
+        var sql = Sql(_db.Chunks.Where(c => EF.Functions.JsonSearch(c.Id, json)));
+        Assert.Contains("@@@", sql);
+        Assert.Contains("::pdb.query", sql);
+    }
+
+    [Fact]
+    public void JsonSearch_boolean_query_generates_json_with_cast() {
+        var query = ParadeDbJsonQuery.Boolean(b => b
+            .Must(
+                ParadeDbJsonQuery.Parse("revenue growth"),
+                ParadeDbJsonQuery.Term("DocumentType", 10)));
+        var sql = Sql(_db.Chunks.Where(c => EF.Functions.JsonSearch(c.Id, query.ToJson())));
+        Assert.Contains("@@@", sql);
+        Assert.Contains("::pdb.query", sql);
+    }
+
+    [Fact]
+    public void JsonSearch_composes_with_order_by_score() {
+        var json = ParadeDbJsonQuery.Parse("test").ToJson();
+        var sql = Sql(_db.Chunks
+            .Where(c => EF.Functions.JsonSearch(c.Id, json))
+            .OrderByDescending(c => EF.Functions.Score(c.Id)));
+        Assert.Contains("@@@", sql);
+        Assert.Contains("::pdb.query", sql);
+        Assert.Contains("pdb.score(", sql);
+        Assert.Contains("ORDER BY", sql);
+    }
+
+    [Fact]
+    public void JsonSearch_composes_with_take() {
+        var json = ParadeDbJsonQuery.Parse("test").ToJson();
+        var sql = Sql(_db.Chunks
+            .Where(c => EF.Functions.JsonSearch(c.Id, json))
+            .Take(5));
+        Assert.Contains("@@@", sql);
+        Assert.Contains("LIMIT", sql);
+    }
+
+    [Fact]
+    public void JsonSearch_composes_with_standard_linq_where() {
+        var json = ParadeDbJsonQuery.Parse("test").ToJson();
+        var sql = Sql(_db.Chunks
+            .Where(c => EF.Functions.JsonSearch(c.Id, json) && c.DocumentType > 5));
+        Assert.Contains("@@@", sql);
+        Assert.Contains("::pdb.query", sql);
+        Assert.Contains(">", sql);
+    }
+
+    [Fact]
+    public void JsonSearch_extension_generates_same_as_ef_functions() {
+        var query = ParadeDbJsonQuery.Parse("test");
+        var sqlExt = Sql(_db.Chunks.JsonSearch(c => c.Id, query));
+        var sqlDirect = Sql(_db.Chunks.Where(c => EF.Functions.JsonSearch(c.Id, query.ToJson())));
+        Assert.Contains("@@@", sqlExt);
+        Assert.Contains("::pdb.query", sqlExt);
+        Assert.Contains("@@@", sqlDirect);
+    }
+
     // ── Combining with LINQ ───────────────────────────────────────────
 
     [Fact]
