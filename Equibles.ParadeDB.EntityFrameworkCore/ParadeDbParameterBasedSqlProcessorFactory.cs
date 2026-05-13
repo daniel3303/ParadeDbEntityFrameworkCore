@@ -11,6 +11,11 @@ public class ParadeDbParameterBasedSqlProcessorFactory : NpgsqlParameterBasedSql
         _dependencies = dependencies;
     }
 
+#if NET8_0
+    public override RelationalParameterBasedSqlProcessor Create(bool useRelationalNulls)
+        => new ParadeDbParameterBasedSqlProcessor(_dependencies, useRelationalNulls);
+#else
     public override RelationalParameterBasedSqlProcessor Create(RelationalParameterBasedSqlProcessorParameters parameters)
         => new ParadeDbParameterBasedSqlProcessor(_dependencies, parameters);
+#endif
 }

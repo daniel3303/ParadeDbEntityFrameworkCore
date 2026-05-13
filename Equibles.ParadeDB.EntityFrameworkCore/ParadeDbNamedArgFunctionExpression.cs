@@ -80,8 +80,10 @@ public sealed class ParadeDbNamedArgFunctionExpression : SqlExpression {
         return true;
     }
 
+#if NET9_0_OR_GREATER
     public override Expression Quote() =>
         throw new NotSupportedException("ParadeDB expressions do not support precompiled queries.");
+#endif
 
     public override int GetHashCode() {
         var hash = new HashCode();
