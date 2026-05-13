@@ -132,6 +132,12 @@ public class Bm25IndexConfigurationTests {
     }
 
     [Fact]
+    public void RegexParamWithoutRegexTokenizer_Throws() {
+        var ex = Assert.Throws<InvalidOperationException>(() => GetCreateScript<RegexParamOnNonRegexTokenizerEntity>());
+        Assert.Contains("RegexPattern requires Tokenizer = Bm25Tokenizer.Regex", ex.Message);
+    }
+
+    [Fact]
     public void OrphanFieldAttributeWithoutBm25Index_Throws() {
         var ex = Assert.Throws<InvalidOperationException>(() => GetCreateScript<OrphanNoIndexEntity>());
         Assert.Contains("OrphanText", ex.Message);
@@ -289,6 +295,13 @@ internal class NgramMissingMinMaxEntity {
 internal class RegexMissingPatternEntity {
     public int Id { get; set; }
     [Bm25Text(Tokenizer = Bm25Tokenizer.Regex)]
+    public string Content { get; set; } = null!;
+}
+
+[Bm25Index(nameof(Id), nameof(Content))]
+internal class RegexParamOnNonRegexTokenizerEntity {
+    public int Id { get; set; }
+    [Bm25Text(Tokenizer = Bm25Tokenizer.Default, RegexPattern = "neuro.*")]
     public string Content { get; set; } = null!;
 }
 
