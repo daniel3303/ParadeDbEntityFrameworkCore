@@ -460,7 +460,7 @@ Available query types:
 | `Exists("field")` | `{"exists":{"field":"..."}}` |
 | `All()` | `{"all":null}` |
 | `DisjunctionMax(queries...)` | `{"disjunction_max":{"disjuncts":[...]}}` |
-| `MoreLikeThis(documentId)` | `{"more_like_this":{"document_id":N}}` |
+| `MoreLikeThis(documentId)` | `{"more_like_this":{"key_value":N}}` |
 | `Boolean(b => b.Must(...).Should(...).MustNot(...))` | Boolean combinations |
 
 ### Combining with LINQ

@@ -244,7 +244,7 @@ public class ParadeDbJsonQueryTests {
     public void MoreLikeThis_creates_correct_json() {
         var json = ParadeDbJsonQuery.MoreLikeThis(42).ToJson();
         var doc = Parse(json);
-        Assert.Equal(42, doc.GetProperty("more_like_this").GetProperty("document_id").GetInt32());
+        Assert.Equal(42, doc.GetProperty("more_like_this").GetProperty("key_value").GetInt32());
     }
 
     // ── Boolean ──────────────────────────────────────────────────────
