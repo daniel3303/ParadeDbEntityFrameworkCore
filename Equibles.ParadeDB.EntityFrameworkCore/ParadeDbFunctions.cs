@@ -196,7 +196,7 @@ public static class ParadeDbFunctions {
         => throw new InvalidOperationException(OnlyInLinq);
 
     /// <summary>
-    /// Phrase prefix match with max expansions. Translates to: column @@@ pdb.phrase_prefix(ARRAY[...], max_expansions => N).
+    /// Phrase prefix match with max expansions. Translates to: column @@@ pdb.phrase_prefix(ARRAY[...], max_expansion => N).
     /// </summary>
     public static bool PhrasePrefix(this DbFunctions _, string column, int maxExpansions, params string[] terms)
         => throw new InvalidOperationException(OnlyInLinq);
