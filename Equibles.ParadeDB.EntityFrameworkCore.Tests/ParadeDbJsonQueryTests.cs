@@ -304,4 +304,85 @@ public class ParadeDbJsonQueryTests {
         Assert.True(must[1].TryGetProperty("boolean", out var nested));
         Assert.Equal(2, nested.GetProperty("should").GetArrayLength());
     }
+
+    // ── ToString / ToJson parity ─────────────────────────────────────
+
+    [Fact]
+    public void ToString_returns_same_string_as_ToJson() {
+        var query = ParadeDbJsonQuery.Parse("shoes");
+        Assert.Equal(query.ToJson(), query.ToString());
+    }
+
+    // ── Match (field, value) — overload without options ──────────────
+
+    [Fact]
+    public void Match_with_field_only_creates_correct_json() {
+        var json = ParadeDbJsonQuery.Match("shoes", "Content").ToJson();
+        var doc = Parse(json);
+        var match = doc.GetProperty("match");
+        Assert.Equal("Content", match.GetProperty("field").GetString());
+        Assert.Equal("shoes", match.GetProperty("value").GetString());
+        Assert.False(match.TryGetProperty("distance", out _));
+        Assert.False(match.TryGetProperty("conjunction_mode", out _));
+    }
+
+    // ── CreateJsonValue — remaining primitive switch arms ────────────
+
+    [Fact]
+    public void Term_with_long_value_serializes_as_number() {
+        var json = ParadeDbJsonQuery.Term("Big", 9_000_000_000L).ToJson();
+        var value = Parse(json).GetProperty("term").GetProperty("value");
+        Assert.Equal(JsonValueKind.Number, value.ValueKind);
+        Assert.Equal(9_000_000_000L, value.GetInt64());
+    }
+
+    [Fact]
+    public void Term_with_double_value_serializes_as_number() {
+        var json = ParadeDbJsonQuery.Term("Score", 2.5d).ToJson();
+        var value = Parse(json).GetProperty("term").GetProperty("value");
+        Assert.Equal(JsonValueKind.Number, value.ValueKind);
+        Assert.Equal(2.5d, value.GetDouble());
+    }
+
+    [Fact]
+    public void Term_with_float_value_serializes_as_number() {
+        var json = ParadeDbJsonQuery.Term("Score", 1.25f).ToJson();
+        var value = Parse(json).GetProperty("term").GetProperty("value");
+        Assert.Equal(JsonValueKind.Number, value.ValueKind);
+        Assert.Equal(1.25, value.GetDouble(), 4);
+    }
+
+    [Fact]
+    public void Term_with_bool_value_serializes_as_boolean() {
+        var json = ParadeDbJsonQuery.Term("InStock", true).ToJson();
+        var value = Parse(json).GetProperty("term").GetProperty("value");
+        Assert.Equal(JsonValueKind.True, value.ValueKind);
+    }
+
+    [Fact]
+    public void Term_with_enum_value_serializes_as_underlying_int() {
+        var json = ParadeDbJsonQuery.Term("Record", Bm25Record.Position).ToJson();
+        var value = Parse(json).GetProperty("term").GetProperty("value");
+        Assert.Equal(JsonValueKind.Number, value.ValueKind);
+        Assert.Equal((int)Bm25Record.Position, value.GetInt32());
+    }
+
+    [Fact]
+    public void Term_with_unsupported_type_falls_back_to_ToString() {
+        // TimeSpan has a culture-invariant ToString — keeps the test stable across locales.
+        var span = new TimeSpan(1, 2, 3);
+        var json = ParadeDbJsonQuery.Term("Duration", span).ToJson();
+        var value = Parse(json).GetProperty("term").GetProperty("value");
+        Assert.Equal(JsonValueKind.String, value.ValueKind);
+        Assert.Equal(span.ToString(), value.GetString());
+    }
+
+    [Fact]
+    public void Term_with_non_utc_datetime_uses_round_trip_format() {
+        var local = new DateTime(2025, 1, 15, 12, 30, 0, DateTimeKind.Unspecified);
+        var json = ParadeDbJsonQuery.Term("PublishedAt", local).ToJson();
+        var value = Parse(json).GetProperty("term").GetProperty("value");
+        Assert.Equal(JsonValueKind.String, value.ValueKind);
+        Assert.Equal(local.ToString("O"), value.GetString());
+    }
 }
