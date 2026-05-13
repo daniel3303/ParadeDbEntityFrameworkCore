@@ -175,6 +175,22 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
+    public void Range_with_lower_exclusive_uses_excluded_key() {
+        var json = ParadeDbJsonQuery.Range("Price", 10, 100, lowerInclusive: false, upperInclusive: true).ToJson();
+        var range = Parse(json).GetProperty("range");
+        Assert.Equal(10, range.GetProperty("lower_bound").GetProperty("excluded").GetInt32());
+        Assert.Equal(100, range.GetProperty("upper_bound").GetProperty("included").GetInt32());
+    }
+
+    [Fact]
+    public void Range_with_upper_bound_only_creates_correct_json() {
+        var json = ParadeDbJsonQuery.Range("Price", null, 100).ToJson();
+        var range = Parse(json).GetProperty("range");
+        Assert.False(range.TryGetProperty("lower_bound", out _));
+        Assert.True(range.TryGetProperty("upper_bound", out _));
+    }
+
+    [Fact]
     public void Range_with_is_datetime_creates_correct_json() {
         var dt = new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc);
         var json = ParadeDbJsonQuery.Range("ReportingDate", dt, null, isDatetime: true).ToJson();

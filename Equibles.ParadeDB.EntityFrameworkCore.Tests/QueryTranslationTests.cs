@@ -403,4 +403,41 @@ public class QueryTranslationTests : IDisposable {
         Assert.Contains("\"limit\" =>", sql);
         Assert.Contains("\"offset\" =>", sql);
     }
+
+    // ── Compile-time-constant guard ────────────────────────────────────
+
+    /// <summary>
+    /// Modifier params (distance, slop, boost) must be compile-time constants; the translator
+    /// rejects captured parameters because it needs the literal value to bake into the SQL
+    /// suffix (e.g. <c>::pdb.fuzzy(2)</c>). Captured int → SqlParameterExpression → throws.
+    /// </summary>
+    [Fact]
+    public void MatchesFuzzy_with_captured_distance_throws_at_translation() {
+        var distance = 2;
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => Sql(_db.Articles.Where(a => EF.Functions.MatchesFuzzy(a.Content, "x", distance))));
+        Assert.Contains("compile-time constants", ex.Message);
+    }
+
+    [Fact]
+    public void MatchesBoosted_with_captured_boost_throws_at_translation() {
+        var boost = 2.0;
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => Sql(_db.Articles.Where(a => EF.Functions.MatchesBoosted(a.Content, "x", boost))));
+        Assert.Contains("compile-time constants", ex.Message);
+    }
+
+    // ── JsonSearch with a reference-type key ───────────────────────────
+
+    /// <summary>
+    /// When the key selector resolves to a reference-typed property the lambda body is a
+    /// plain MemberAccess — not a Convert — so <c>StripConvert</c> and <c>BoxIfNeeded</c>
+    /// take their pass-through branches. The int-keyed tests don't exercise either path.
+    /// </summary>
+    [Fact]
+    public void JsonSearch_with_reference_type_key_emits_at_operator() {
+        var sql = Sql(_db.Chunks.JsonSearch(c => c.Content, ParadeDbJsonQuery.Parse("revenue")));
+        Assert.Contains("@@@", sql);
+        Assert.Contains("::jsonb", sql);
+    }
 }

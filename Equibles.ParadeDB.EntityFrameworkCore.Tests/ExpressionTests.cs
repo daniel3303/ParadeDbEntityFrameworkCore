@@ -216,4 +216,116 @@ public class ExpressionTests {
         Assert.Contains("hello", output);
         Assert.Contains("::pdb.fuzzy(2)", output);
     }
+
+    [Fact]
+    public void ModifiedQueryExpression_VisitChildren_returns_new_when_inner_changes() {
+        var original = Stub("hello");
+        var replacement = Stub("world");
+        var expr = new ParadeDbModifiedQueryExpression(original, "::pdb.boost(2)", typeof(string), original.TypeMapping);
+
+        var visitor = new ReplaceVisitor(original, replacement);
+        var result = visitor.Visit(expr);
+
+        var rebuilt = Assert.IsType<ParadeDbModifiedQueryExpression>(result);
+        Assert.NotSame(expr, rebuilt);
+        Assert.Same(replacement, rebuilt.InnerExpression);
+        Assert.Equal("::pdb.boost(2)", rebuilt.ModifierSuffix);
+    }
+
+    [Fact]
+    public void ModifiedQueryExpression_VisitChildren_returns_same_when_inner_unchanged() {
+        var inner = Stub("hello");
+        var expr = new ParadeDbModifiedQueryExpression(inner, "::pdb.boost(2)", typeof(string), inner.TypeMapping);
+
+        var visitor = new ReplaceVisitor(Stub("nothing-matches-this"), Stub("unused"));
+        var result = visitor.Visit(expr);
+
+        Assert.Same(expr, result);
+    }
+
+    // ── NamedArgFunctionExpression.Equals — remaining branch arms ──────
+
+    [Fact]
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForUnrelatedType() {
+        var arg = Stub("c");
+        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg], [], typeof(string), arg.TypeMapping);
+
+        Assert.False(a.Equals("not an expression"));
+    }
+
+    [Fact]
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentPositionalCount() {
+        var arg1 = Stub("c");
+        var arg2 = Stub("d");
+        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg1], [], typeof(string), arg1.TypeMapping);
+        var b = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg1, arg2], [], typeof(string), arg1.TypeMapping);
+
+        Assert.False(a.Equals(b));
+    }
+
+    [Fact]
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentNamedCount() {
+        var arg = Stub("c");
+        var v = Stub("<b>");
+        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
+            [arg], [("start_tag", v)], typeof(string), arg.TypeMapping);
+        var b = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
+            [arg], [("start_tag", v), ("end_tag", v)], typeof(string), arg.TypeMapping);
+
+        Assert.False(a.Equals(b));
+    }
+
+    [Fact]
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentPositionalValue() {
+        var arg1 = Stub("c");
+        var arg2 = Stub("d");
+        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg1], [], typeof(string), arg1.TypeMapping);
+        var b = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg2], [], typeof(string), arg1.TypeMapping);
+
+        Assert.False(a.Equals(b));
+    }
+
+    [Fact]
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentNamedValue() {
+        var arg = Stub("c");
+        var v1 = Stub("<b>");
+        var v2 = Stub("<i>");
+        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
+            [arg], [("start_tag", v1)], typeof(string), arg.TypeMapping);
+        var b = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
+            [arg], [("start_tag", v2)], typeof(string), arg.TypeMapping);
+
+        Assert.False(a.Equals(b));
+    }
+
+    [Fact]
+    public void NamedArgFunctionExpression_Print_emits_separator_between_multiple_positional_args() {
+        var p1 = Stub("c");
+        var p2 = Stub("d");
+        var expr = new ParadeDbNamedArgFunctionExpression("pdb.fn",
+            [p1, p2], [], typeof(string), p1.TypeMapping);
+
+        var printer = new ExpressionPrinter();
+        printer.Visit(expr);
+        var output = printer.ToString();
+
+        Assert.Contains("pdb.fn(", output);
+        Assert.Contains(", ", output);
+    }
+
+    [Fact]
+    public void NamedArgFunctionExpression_Print_handles_named_args_without_positional() {
+        var v1 = Stub("<b>");
+        var v2 = Stub("</b>");
+        var expr = new ParadeDbNamedArgFunctionExpression("pdb.fn",
+            [], [("start_tag", v1), ("end_tag", v2)], typeof(string), v1.TypeMapping);
+
+        var printer = new ExpressionPrinter();
+        printer.Visit(expr);
+        var output = printer.ToString();
+
+        Assert.Contains("pdb.fn(", output);
+        Assert.Contains("start_tag => ", output);
+        Assert.Contains("end_tag => ", output);
+    }
 }
