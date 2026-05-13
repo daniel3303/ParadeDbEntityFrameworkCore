@@ -328,4 +328,79 @@ public class QueryTranslationTests : IDisposable {
         Assert.Contains("pdb.score(", sql);
         Assert.Contains("ORDER BY", sql);
     }
+
+    // ── Score Ordering Extensions ─────────────────────────────────────
+
+    [Fact]
+    public void OrderByScoreDescending_extension_emits_pdb_score_with_desc() {
+        var sql = Sql(_db.Chunks
+            .JsonSearch(c => c.Id, ParadeDbJsonQuery.Parse("test"))
+            .OrderByScoreDescending(c => c.Id));
+        Assert.Contains("pdb.score(", sql);
+        Assert.Contains("ORDER BY", sql);
+        Assert.Contains("DESC", sql);
+    }
+
+    [Fact]
+    public void OrderByScore_extension_emits_pdb_score_without_desc() {
+        var sql = Sql(_db.Chunks
+            .JsonSearch(c => c.Id, ParadeDbJsonQuery.Parse("test"))
+            .OrderByScore(c => c.Id));
+        Assert.Contains("pdb.score(", sql);
+        Assert.Contains("ORDER BY", sql);
+        Assert.DoesNotContain("DESC", sql);
+    }
+
+    // ── Translator fall-through ───────────────────────────────────────
+
+    /// <summary>
+    /// Forces <see cref="ParadeDbMethodCallTranslator.Translate"/> down its fall-through
+    /// path: a non-ParadeDB method call (string.StartsWith) is offered to every translator
+    /// plugin, including ours — ours should return null so Npgsql's translator handles it.
+    /// </summary>
+    [Fact]
+    public void NonParadeDbMethod_is_translated_by_other_plugins() {
+        var sql = Sql(_db.Articles.Where(a => a.Title.StartsWith("foo")));
+        Assert.DoesNotContain("@@@", sql);
+        Assert.DoesNotContain("|||", sql);
+        Assert.DoesNotContain("&&&", sql);
+        Assert.DoesNotContain("###", sql);
+        Assert.DoesNotContain("===", sql);
+    }
+
+    // ── Nullability processor mutation path ───────────────────────────
+
+    /// <summary>
+    /// Snippet uses a <see cref="ParadeDbNamedArgFunctionExpression"/>. With captured
+    /// (parameterized) tag/limit/offset arguments, the SqlNullabilityProcessor visits
+    /// every named arg, and the parameter visits typically yield different SqlExpression
+    /// instances — exercising the "args changed → build new expression" branch.
+    /// </summary>
+    [Fact]
+    public void Snippet_with_captured_parameters_still_emits_named_args() {
+        var startTag = "<b>";
+        var endTag = "</b>";
+        var maxChars = 100;
+        var sql = Sql(_db.Articles
+            .Where(a => EF.Functions.Matches(a.Content, "test"))
+            .Select(a => new { Snip = EF.Functions.Snippet(a.Content, startTag, endTag, maxChars) }));
+        Assert.Contains("pdb.snippet(", sql);
+        Assert.Contains("start_tag =>", sql);
+        Assert.Contains("end_tag =>", sql);
+        Assert.Contains("max_num_chars =>", sql);
+    }
+
+    [Fact]
+    public void Snippets_with_captured_parameters_still_emits_named_args() {
+        var maxChars = 15;
+        var limit = 5;
+        var offset = 0;
+        var sql = Sql(_db.Articles
+            .Where(a => EF.Functions.Matches(a.Content, "test"))
+            .Select(a => new { Snips = EF.Functions.Snippets(a.Content, maxChars, limit, offset) }));
+        Assert.Contains("pdb.snippets(", sql);
+        Assert.Contains("max_num_chars =>", sql);
+        Assert.Contains("\"limit\" =>", sql);
+        Assert.Contains("\"offset\" =>", sql);
+    }
 }
