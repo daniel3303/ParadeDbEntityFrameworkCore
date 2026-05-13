@@ -209,10 +209,10 @@ public sealed class ParadeDbJsonQuery {
     // ── More Like This ───────────────────────────────────────────────
 
     /// <summary>
-    /// More-like-this query. Produces: <c>{"more_like_this":{"document_id":N}}</c>.
+    /// More-like-this query. Produces: <c>{"more_like_this":{"key_value":N}}</c>.
     /// </summary>
     public static ParadeDbJsonQuery MoreLikeThis(int documentId) =>
-        new(new JsonObject { ["more_like_this"] = new JsonObject { ["document_id"] = documentId } });
+        new(new JsonObject { ["more_like_this"] = new JsonObject { ["key_value"] = documentId } });
 
     // ── Boolean ──────────────────────────────────────────────────────
 
