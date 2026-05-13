@@ -75,7 +75,7 @@ internal static class Bm25StorageParameterBuilder {
         if (effectiveTokenizer == Bm25Tokenizer.Ngram) {
             tok["min_gram"] = minGram;
             tok["max_gram"] = maxGram;
-            if (prefixOnly) tok["prefix_only"] = true;
+            tok["prefix_only"] = prefixOnly;
         }
         if (effectiveTokenizer == Bm25Tokenizer.Regex) {
             tok["pattern"] = regexPattern;

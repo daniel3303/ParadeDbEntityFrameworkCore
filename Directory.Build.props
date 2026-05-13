@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <Authors>Equibles, Daniel Oliveira</Authors>
     <Company>Equibles</Company>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

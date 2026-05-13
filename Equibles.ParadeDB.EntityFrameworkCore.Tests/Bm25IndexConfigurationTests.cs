@@ -38,9 +38,9 @@ public class Bm25IndexConfigurationTests {
     }
 
     [Fact]
-    public void Bm25Text_WithNgramTokenizer_EmitsMinMaxGram() {
+    public void Bm25Text_WithNgramTokenizer_EmitsMinMaxGramAndPrefixOnly() {
         var sql = GetCreateScript<NgramEntity>();
-        Assert.Contains("""text_fields='{"Content":{"tokenizer":{"type":"ngram","min_gram":2,"max_gram":4}}}'""", sql);
+        Assert.Contains("""text_fields='{"Content":{"tokenizer":{"type":"ngram","min_gram":2,"max_gram":4,"prefix_only":false}}}'""", sql);
     }
 
     [Fact]

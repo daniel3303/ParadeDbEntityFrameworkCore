@@ -57,6 +57,51 @@ public sealed class ParadeDbFixture : IAsyncLifetime {
                 Category = "cooking",
                 Rating = 5,
             });
+
+        ctx.Products.AddRange(
+            new Product {
+                Name = "Ultra book laptop",
+                InStock = true,
+                ReleasedAt = new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+                Specs = """{"weight": 1200, "color": "silver"}""",
+            },
+            new Product {
+                Name = "Mechanical keyboard",
+                InStock = false,
+                ReleasedAt = new DateTime(2023, 1, 15, 0, 0, 0, DateTimeKind.Utc),
+                Specs = """{"weight": 900, "color": "black"}""",
+            },
+            new Product {
+                Name = "Wireless mouse",
+                InStock = true,
+                ReleasedAt = new DateTime(2024, 11, 20, 0, 0, 0, DateTimeKind.Utc),
+                Specs = """{"weight": 80, "color": "white"}""",
+            });
+
+        ctx.KeywordRecords.AddRange(
+            new KeywordRecord { Code = "ABC-123" },
+            new KeywordRecord { Code = "XYZ-789" });
+
+        ctx.NgramRecords.AddRange(
+            new NgramRecord { Body = "supercalifragilistic" },
+            new NgramRecord { Body = "ordinary text" });
+
+        ctx.IcuRecords.AddRange(
+            new IcuRecord { Body = "Café résumé naïve" },
+            new IcuRecord { Body = "Plain ASCII text" });
+
+        ctx.SourceCodeRecords.AddRange(
+            new SourceCodeRecord { Snippet = "GetUserById" },
+            new SourceCodeRecord { Snippet = "SaveChangesAsync" });
+
+        ctx.RegexRecords.AddRange(
+            new RegexRecord { Body = "alpha beta gamma" },
+            new RegexRecord { Body = "delta epsilon" });
+
+        ctx.GermanArticles.AddRange(
+            new GermanArticle { Content = "Die Häuser sind groß und schön." },
+            new GermanArticle { Content = "Der Mann läuft schnell." });
+
         await ctx.SaveChangesAsync();
     }
 }
