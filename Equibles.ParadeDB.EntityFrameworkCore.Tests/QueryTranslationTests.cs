@@ -63,10 +63,14 @@ public class QueryTranslationTests : IDisposable {
     }
 
     [Fact]
-    public void MatchesFuzzy_full_generates_fuzzy_with_options() {
+    public void MatchesFuzzy_full_generates_pdb_match_with_options() {
         var sql = Sql(_db.Articles.Where(a => EF.Functions.MatchesFuzzy(a.Content, "machin", 2, true, false)));
-        Assert.Contains("|||", sql);
-        Assert.Contains("::pdb.fuzzy(2, true, false)", sql);
+        Assert.Contains("@@@", sql);
+        Assert.Contains("pdb.match(", sql);
+        Assert.Contains("distance =>", sql);
+        Assert.Contains("transposition_cost_one =>", sql);
+        Assert.Contains("prefix =>", sql);
+        Assert.DoesNotContain("conjunction_mode =>", sql);
     }
 
     [Fact]
@@ -77,10 +81,11 @@ public class QueryTranslationTests : IDisposable {
     }
 
     [Fact]
-    public void MatchesAllFuzzy_full_generates_and_with_fuzzy_options() {
+    public void MatchesAllFuzzy_full_generates_pdb_match_with_conjunction() {
         var sql = Sql(_db.Articles.Where(a => EF.Functions.MatchesAllFuzzy(a.Content, "machin", 1, false, true)));
-        Assert.Contains("&&&", sql);
-        Assert.Contains("::pdb.fuzzy(1, false, true)", sql);
+        Assert.Contains("@@@", sql);
+        Assert.Contains("pdb.match(", sql);
+        Assert.Contains("conjunction_mode =>", sql);
     }
 
     [Fact]
@@ -91,10 +96,10 @@ public class QueryTranslationTests : IDisposable {
     }
 
     [Fact]
-    public void MatchesTermFuzzy_full_generates_term_with_fuzzy_options() {
+    public void MatchesTermFuzzy_full_generates_pdb_fuzzy_term_function() {
         var sql = Sql(_db.Articles.Where(a => EF.Functions.MatchesTermFuzzy(a.Content, "machin", 2, true, true)));
-        Assert.Contains("===", sql);
-        Assert.Contains("::pdb.fuzzy(2, true, true)", sql);
+        Assert.Contains("@@@", sql);
+        Assert.Contains("pdb.fuzzy_term(", sql);
     }
 
     // ── Boost ─────────────────────────────────────────────────────────

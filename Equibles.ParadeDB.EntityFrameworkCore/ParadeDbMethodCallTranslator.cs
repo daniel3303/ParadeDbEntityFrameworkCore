@@ -144,19 +144,22 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
             return MakeBinaryBool(arguments[1], "|||", WithModifier(arguments[2], BuildFuzzySuffix(arguments[3])));
 
         if (method == MatchesFuzzyFullMethod)
-            return MakeBinaryBool(arguments[1], "|||", WithModifier(arguments[2], BuildFuzzyFullSuffix(arguments[3], arguments[4], arguments[5])));
+            return MakeBinaryBool(arguments[1], "@@@",
+                BuildFuzzyMatchFunc(arguments[2], arguments[3], arguments[4], arguments[5], conjunctionMode: false));
 
         if (method == MatchesAllFuzzyMethod)
             return MakeBinaryBool(arguments[1], "&&&", WithModifier(arguments[2], BuildFuzzySuffix(arguments[3])));
 
         if (method == MatchesAllFuzzyFullMethod)
-            return MakeBinaryBool(arguments[1], "&&&", WithModifier(arguments[2], BuildFuzzyFullSuffix(arguments[3], arguments[4], arguments[5])));
+            return MakeBinaryBool(arguments[1], "@@@",
+                BuildFuzzyMatchFunc(arguments[2], arguments[3], arguments[4], arguments[5], conjunctionMode: true));
 
         if (method == MatchesTermFuzzyMethod)
             return MakeBinaryBool(arguments[1], "===", WithModifier(arguments[2], BuildFuzzySuffix(arguments[3])));
 
         if (method == MatchesTermFuzzyFullMethod)
-            return MakeBinaryBool(arguments[1], "===", WithModifier(arguments[2], BuildFuzzyFullSuffix(arguments[3], arguments[4], arguments[5])));
+            return MakeBinaryBool(arguments[1], "@@@",
+                BuildFuzzyTermFunc(arguments[2], arguments[3], arguments[4], arguments[5]));
 
         // ── Boost ─────────────────────────────────────────────────
         if (method == MatchesBoostedMethod)
@@ -297,21 +300,33 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
             ? value
             : throw new InvalidOperationException("ParadeDB modifier parameters (boost factor) must be compile-time constants.");
 
-    private static bool ExtractBool(SqlExpression expr) =>
-        expr is SqlConstantExpression { Value: bool value }
-            ? value
-            : throw new InvalidOperationException("ParadeDB modifier parameters (prefix, transpositionCostOne) must be compile-time constants.");
-
     private static string BuildFuzzySuffix(SqlExpression distanceExpr) {
         var distance = ExtractInt(distanceExpr);
         return $"::pdb.fuzzy({distance})";
     }
 
-    private static string BuildFuzzyFullSuffix(SqlExpression distanceExpr, SqlExpression prefixExpr, SqlExpression transpExpr) {
-        var distance = ExtractInt(distanceExpr);
-        var prefix = ExtractBool(prefixExpr);
-        var transp = ExtractBool(transpExpr);
-        return $"::pdb.fuzzy({distance}, {BoolLit(prefix)}, {BoolLit(transp)})";
+    // pdb.fuzzy(...) typmod accepts only a single int; the 5-arg fuzzy overloads route
+    // through pdb.match / pdb.fuzzy_term function calls instead. See README and GH-15.
+    private SqlExpression BuildFuzzyMatchFunc(SqlExpression queryExpr, SqlExpression distanceExpr,
+        SqlExpression prefixExpr, SqlExpression transpExpr, bool conjunctionMode) {
+        var named = new List<(string, SqlExpression)> {
+            ("distance", Map(distanceExpr)),
+            ("transposition_cost_one", Map(transpExpr)),
+            ("prefix", Map(prefixExpr)),
+        };
+        if (conjunctionMode) named.Add(("conjunction_mode", _sql.Constant(true, _typeMappingSource.FindMapping(typeof(bool)))));
+        return new ParadeDbNamedArgFunctionExpression("pdb.match",
+            [Map(queryExpr)], named,
+            typeof(bool), _typeMappingSource.FindMapping(typeof(bool)));
+    }
+
+    private SqlExpression BuildFuzzyTermFunc(SqlExpression queryExpr, SqlExpression distanceExpr,
+        SqlExpression prefixExpr, SqlExpression transpExpr) {
+        // pdb.fuzzy_term(value, distance, transposition_cost_one, prefix) — positional order.
+        return _sql.Function("pdb.fuzzy_term",
+            [Map(queryExpr), Map(distanceExpr), Map(transpExpr), Map(prefixExpr)],
+            nullable: true, argumentsPropagateNullability: [true, true, true, true],
+            typeof(bool), _typeMappingSource.FindMapping(typeof(bool)));
     }
 
     private static string BuildBoostSuffix(SqlExpression boostExpr) {
@@ -324,5 +339,4 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
         return $"::pdb.slop({slop})";
     }
 
-    private static string BoolLit(bool value) => value ? "true" : "false";
 }

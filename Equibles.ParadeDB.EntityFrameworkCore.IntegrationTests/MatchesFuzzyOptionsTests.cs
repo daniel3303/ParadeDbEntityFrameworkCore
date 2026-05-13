@@ -10,7 +10,7 @@ public class MatchesFuzzyOptionsTests(ParadeDbFixture fixture) {
     // but transposition distance 1 — at distance=1, transpositionCostOne is the only thing
     // that makes the match succeed. A regression that drops the extra args (or swaps them)
     // would flip both assertions.
-    [Fact(Skip = "GH-15 — 5-arg MatchesFuzzy emits invalid SQL: type modifiers must be simple constants")]
+    [Fact]
     public async Task MatchesFuzzy_WithTranspositionCostOne_MatchesAdjacentSwapAtDistance1() {
         await using var ctx = fixture.CreateDbContext();
 

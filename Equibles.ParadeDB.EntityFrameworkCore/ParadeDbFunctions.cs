@@ -67,7 +67,7 @@ public static class ParadeDbFunctions {
         => throw new InvalidOperationException(OnlyInLinq);
 
     /// <summary>
-    /// Fuzzy OR match with options. Translates to: column ||| 'query'::pdb.fuzzy(distance, prefix, transpositionCostOne).
+    /// Fuzzy OR match with options. Translates to: column @@@ pdb.match('query', distance =&gt; D, transposition_cost_one =&gt; T, prefix =&gt; P).
     /// <paramref name="prefix"/> exempts the initial substring from edit distance.
     /// <paramref name="transpositionCostOne"/> counts swapping two adjacent characters as one edit.
     /// </summary>
@@ -82,7 +82,7 @@ public static class ParadeDbFunctions {
         => throw new InvalidOperationException(OnlyInLinq);
 
     /// <summary>
-    /// Fuzzy AND match with options. Translates to: column &&& 'query'::pdb.fuzzy(distance, prefix, transpositionCostOne).
+    /// Fuzzy AND match with options. Translates to: column @@@ pdb.match('query', distance =&gt; D, transposition_cost_one =&gt; T, prefix =&gt; P, conjunction_mode =&gt; true).
     /// </summary>
     public static bool MatchesAllFuzzy(this DbFunctions _, string column, string query, int distance,
         bool prefix, bool transpositionCostOne)
@@ -95,7 +95,7 @@ public static class ParadeDbFunctions {
         => throw new InvalidOperationException(OnlyInLinq);
 
     /// <summary>
-    /// Fuzzy term match with options. Translates to: column === 'query'::pdb.fuzzy(distance, prefix, transpositionCostOne).
+    /// Fuzzy term match with options. Translates to: column @@@ pdb.fuzzy_term('query', distance, transposition_cost_one, prefix).
     /// </summary>
     public static bool MatchesTermFuzzy(this DbFunctions _, string column, string query, int distance,
         bool prefix, bool transpositionCostOne)
