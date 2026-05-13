@@ -156,8 +156,9 @@ public static class ParadeDbFunctions {
 
     /// <summary>
     /// Multiple snippets. Translates to: pdb.snippets(column, max_num_chars => N, "limit" => L, "offset" => O).
+    /// Returns a text[] of highlighted excerpts.
     /// </summary>
-    public static string Snippets(this DbFunctions _, string column, int maxNumChars, int limit, int offset)
+    public static string[] Snippets(this DbFunctions _, string column, int maxNumChars, int limit, int offset)
         => throw new InvalidOperationException(OnlyInLinq);
 
     // ── Parse Query (Tantivy Syntax) ──────────────────────────────────

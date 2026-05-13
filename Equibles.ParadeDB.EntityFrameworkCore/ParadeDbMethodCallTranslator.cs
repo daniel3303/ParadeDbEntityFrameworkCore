@@ -204,7 +204,7 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
                     ("\"limit\"", Map(arguments[3])),
                     ("\"offset\"", Map(arguments[4]))
                 ],
-                typeof(string), _typeMappingSource.FindMapping(typeof(string)));
+                typeof(string[]), _typeMappingSource.FindMapping(typeof(string[])));
 
         // ── Parse Query ───────────────────────────────────────────
         if (method == ParseMethod) {
