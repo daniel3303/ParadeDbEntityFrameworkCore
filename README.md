@@ -12,7 +12,7 @@ Provides a `[Bm25Index]` attribute for automatic index creation via migrations, 
 
 - PostgreSQL with the [pg_search](https://docs.paradedb.com/search/quickstart) extension installed
 - [Npgsql.EntityFrameworkCore.PostgreSQL](https://www.nuget.org/packages/Npgsql.EntityFrameworkCore.PostgreSQL) provider
-- .NET 10+
+- .NET 8, 9, or 10
 
 ## Installation
 

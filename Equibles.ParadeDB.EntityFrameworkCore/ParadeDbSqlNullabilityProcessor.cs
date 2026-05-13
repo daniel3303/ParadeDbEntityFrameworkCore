@@ -5,10 +5,17 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Internal;
 namespace Equibles.ParadeDB.EntityFrameworkCore;
 
 public class ParadeDbSqlNullabilityProcessor : NpgsqlSqlNullabilityProcessor {
+#if NET8_0
+    public ParadeDbSqlNullabilityProcessor(RelationalParameterBasedSqlProcessorDependencies dependencies,
+        bool useRelationalNulls)
+        : base(dependencies, useRelationalNulls) {
+    }
+#else
     public ParadeDbSqlNullabilityProcessor(RelationalParameterBasedSqlProcessorDependencies dependencies,
         RelationalParameterBasedSqlProcessorParameters parameters)
         : base(dependencies, parameters) {
     }
+#endif
 
     protected override SqlExpression VisitCustomSqlExpression(SqlExpression sqlExpression,
         bool allowOptimizedExpansion, out bool nullable) {
