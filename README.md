@@ -45,7 +45,54 @@ public class Article
 
 The first parameter is the **key field** (required by pg_search to identify rows for scoring via `pdb.score()`), followed by the columns to index for full-text search. The key field is not searchable — it's only used internally by ParadeDB.
 
-### 3. Create a migration
+### 3. (Optional) Configure per-column index settings
+
+Drop column-level attributes on the indexed properties to tune tokenization, stemming, stopwords, fast-storage, and field-specific options. Anything you don't set keeps pg_search's defaults.
+
+```csharp
+using Equibles.ParadeDB.EntityFrameworkCore;
+
+[Bm25Index(nameof(Id), nameof(Title), nameof(Content), nameof(Category), nameof(Rating), nameof(PublishedAt))]
+public class Article
+{
+    public Guid Id { get; set; }
+
+    [Bm25Text(Stemmer = Bm25Language.English, Fast = true)]
+    public string Title { get; set; }
+
+    [Bm25Text(Stemmer = Bm25Language.English, Record = Bm25Record.Position)]
+    public string Content { get; set; }
+
+    [Bm25Text(Tokenizer = Bm25Tokenizer.Raw, Fast = true)]
+    public string Category { get; set; }
+
+    [Bm25Numeric(Fast = true)]
+    public int Rating { get; set; }
+
+    [Bm25DateTime(Fast = true)]
+    public DateTime PublishedAt { get; set; }
+}
+```
+
+| Attribute | Settings |
+|---|---|
+| `[Bm25Text]` | `Tokenizer`, `MinGram` / `MaxGram` / `PrefixOnly` (ngram), `RegexPattern` (regex), `Stemmer`, `StopwordsLanguage`, `Fast`, `Record`, `Indexed`, `Fieldnorms` |
+| `[Bm25Numeric]` | `Fast`, `Indexed` |
+| `[Bm25Boolean]` | `Fast`, `Indexed` |
+| `[Bm25DateTime]` | `Fast`, `Indexed` |
+| `[Bm25Json]` | same as `[Bm25Text]` plus `ExpandDots` |
+
+**`Bm25Tokenizer`** — `Default`, `Whitespace`, `Raw`, `Keyword`, `SourceCode`, `Icu`, `Ngram`, `Regex`, `ChineseCompatible`, `ChineseLindera`, `JapaneseLindera`, `KoreanLindera`, `Jieba`. `Ngram` requires `MinGram` and `MaxGram`; `Regex` requires `RegexPattern`. Other tokenizers take no parameters.
+
+**`Bm25Language`** — used by both `Stemmer` and `StopwordsLanguage`: `Arabic`, `Czech`, `Danish`, `Dutch`, `English`, `Finnish`, `French`, `German`, `Greek`, `Hungarian`, `Italian`, `Norwegian`, `Polish`, `Portuguese`, `Romanian`, `Russian`, `Spanish`, `Swedish`, `Tamil`, `Turkish`.
+
+**`Bm25Record`** — `Basic` (term + frequency), `Freq`, or `Position`. `Position` is required for phrase queries; the others use less disk.
+
+**`Fast`** stores the column in columnar format for sorting/faceting/aggregation. Required if you want `ORDER BY` on this column to use the index.
+
+A property may only have one `[Bm25*]` attribute, and that property must be listed in the entity's `[Bm25Index]` columns — orphan attributes throw at model-build time.
+
+### 4. Create a migration
 
 ```bash
 dotnet ef migrations add AddBm25Index
@@ -54,7 +101,7 @@ dotnet ef database update
 
 EF Core will generate the migration automatically, creating:
 - The `pg_search` PostgreSQL extension
-- A BM25 index on the specified columns with the correct `key_field` storage parameter
+- A BM25 index on the specified columns with the `key_field` storage parameter and per-column `text_fields` / `numeric_fields` / `boolean_fields` / `datetime_fields` / `json_fields` JSON derived from any `[Bm25Text]` / `[Bm25Numeric]` / etc. attributes
 
 ## Querying
 
@@ -442,42 +489,14 @@ The library hooks into EF Core's model finalization pipeline via `IConventionSet
 1. Scans entity types for `[Bm25Index]` attributes
 2. Creates database indexes with the `bm25` index method
 3. Sets the `key_field` storage parameter (required by pg_search)
-4. Registers the `pg_search` PostgreSQL extension
+4. Reads `[Bm25Text]` / `[Bm25Numeric]` / `[Bm25Boolean]` / `[Bm25DateTime]` / `[Bm25Json]` from the indexed properties and emits the corresponding `text_fields` / `numeric_fields` / `boolean_fields` / `datetime_fields` / `json_fields` JSON storage parameters
+5. Registers the `pg_search` PostgreSQL extension
 
 All of this is translated into standard EF Core migrations — no manual SQL required.
 
 ### Query translation
 
-LINQ methods on `EF.Functions` are translated to SQL via `IMethodCallTranslatorPlugin`:
-
-| C# Method | SQL |
-|-----------|-----|
-| `Matches(col, "q")` | `col \|\|\| 'q'` |
-| `MatchesAll(col, "q")` | `col &&& 'q'` |
-| `MatchesPhrase(col, "q")` | `col ### 'q'` |
-| `MatchesPhrase(col, "q", 2)` | `col ### 'q'::pdb.slop(2)` |
-| `MatchesTerm(col, "q")` | `col === 'q'` |
-| `MatchesTermSet(col, "a", "b")` | `col === ARRAY['a', 'b']` |
-| `MatchesFuzzy(col, "q", 2)` | `col \|\|\| 'q'::pdb.fuzzy(2)` |
-| `MatchesFuzzy(col, "q", 2, true, false)` | `col \|\|\| 'q'::pdb.fuzzy(2, true, false)` |
-| `MatchesAllFuzzy(col, "q", 2)` | `col &&& 'q'::pdb.fuzzy(2)` |
-| `MatchesTermFuzzy(col, "q", 1)` | `col === 'q'::pdb.fuzzy(1)` |
-| `MatchesBoosted(col, "q", 2.0)` | `col \|\|\| 'q'::pdb.boost(2)` |
-| `MatchesAllBoosted(col, "q", 2.0)` | `col &&& 'q'::pdb.boost(2)` |
-| `MatchesFuzzyBoosted(col, "q", 2, 2.0)` | `col \|\|\| 'q'::pdb.fuzzy(2)::pdb.boost(2)` |
-| `MatchesAllFuzzyBoosted(col, "q", 2, 2.0)` | `col &&& 'q'::pdb.fuzzy(2)::pdb.boost(2)` |
-| `Score(id)` | `pdb.score(id)` |
-| `Snippet(col)` | `pdb.snippet(col)` |
-| `Snippet(col, "<b>", "</b>", 100)` | `pdb.snippet(col, start_tag => '<b>', end_tag => '</b>', max_num_chars => 100)` |
-| `Snippets(col, 15, 5, 0)` | `pdb.snippets(col, max_num_chars => 15, "limit" => 5, "offset" => 0)` |
-| `Parse(id, "desc:shoes")` | `id @@@ pdb.parse('desc:shoes')` |
-| `Parse(id, "q", true, true)` | `id @@@ pdb.parse('q', lenient => true, conjunction_mode => true)` |
-| `Regex(col, "key.*")` | `col @@@ pdb.regex('key.*')` |
-| `PhrasePrefix(col, "running", "sh")` | `col @@@ pdb.phrase_prefix(ARRAY['running', 'sh'])` |
-| `PhrasePrefix(col, 10, "running", "sh")` | `col @@@ pdb.phrase_prefix(ARRAY['running', 'sh'], max_expansions => 10)` |
-| `MoreLikeThis(id, 3)` | `id @@@ pdb.more_like_this(3)` |
-| `MoreLikeThis(id, 3, "description")` | `id @@@ pdb.more_like_this(3, ARRAY['description'])` |
-| `JsonSearch(id, jsonQuery)` | `id @@@ 'jsonQuery'::pdb.query` |
+LINQ methods on `EF.Functions` are translated to SQL via `IMethodCallTranslatorPlugin`. The mapping for each method is shown alongside its example in the [Querying](#querying) section above.
 
 ## License
 
