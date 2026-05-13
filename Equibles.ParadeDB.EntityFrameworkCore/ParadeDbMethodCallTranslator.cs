@@ -244,7 +244,7 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
         if (method == PhrasePrefixMaxMethod) {
             var phrasePrefixFunc = new ParadeDbNamedArgFunctionExpression("pdb.phrase_prefix",
                 [Map(arguments[3])],
-                [("max_expansions", Map(arguments[2]))],
+                [("max_expansion", Map(arguments[2]))],
                 typeof(bool), _typeMappingSource.FindMapping(typeof(bool)));
             return MakeBinaryBool(arguments[1], "@@@", phrasePrefixFunc);
         }

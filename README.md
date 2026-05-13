@@ -366,7 +366,7 @@ var results = await dbContext.Articles
 
 ```sql
 SELECT * FROM "Articles" WHERE "Content" @@@ pdb.phrase_prefix(ARRAY['running', 'sh'])
-SELECT * FROM "Articles" WHERE "Content" @@@ pdb.phrase_prefix(ARRAY['running', 'sh'], max_expansions => 10)
+SELECT * FROM "Articles" WHERE "Content" @@@ pdb.phrase_prefix(ARRAY['running', 'sh'], max_expansion => 10)
 ```
 
 ### More Like This

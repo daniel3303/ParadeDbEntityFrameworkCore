@@ -212,7 +212,7 @@ public class QueryTranslationTests : IDisposable {
         var sql = Sql(_db.Articles.Where(a => EF.Functions.PhrasePrefix(a.Content, 10, "running", "sh")));
         Assert.Contains("@@@", sql);
         Assert.Contains("pdb.phrase_prefix(", sql);
-        Assert.Contains("max_expansions =>", sql);
+        Assert.Contains("max_expansion =>", sql);
     }
 
     // ── More Like This ────────────────────────────────────────────────
