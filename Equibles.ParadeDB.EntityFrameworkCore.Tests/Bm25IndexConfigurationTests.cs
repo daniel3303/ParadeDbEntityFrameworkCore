@@ -138,6 +138,27 @@ public class Bm25IndexConfigurationTests {
     }
 
     [Fact]
+    public void Bm25Numeric_WithIndexedFalse_EmitsIndexedFalse() {
+        var sql = GetCreateScript<NotIndexedNumericEntity>();
+        Assert.Contains("numeric_fields=", sql);
+        Assert.Contains("\"indexed\":false", sql);
+    }
+
+    [Fact]
+    public void Bm25Boolean_WithIndexedFalse_EmitsIndexedFalse() {
+        var sql = GetCreateScript<NotIndexedBooleanEntity>();
+        Assert.Contains("boolean_fields=", sql);
+        Assert.Contains("\"indexed\":false", sql);
+    }
+
+    [Fact]
+    public void Bm25DateTime_WithIndexedFalse_EmitsIndexedFalse() {
+        var sql = GetCreateScript<NotIndexedDateTimeEntity>();
+        Assert.Contains("datetime_fields=", sql);
+        Assert.Contains("\"indexed\":false", sql);
+    }
+
+    [Fact]
     public void OrphanFieldAttributeWithoutBm25Index_Throws() {
         var ex = Assert.Throws<InvalidOperationException>(() => GetCreateScript<OrphanNoIndexEntity>());
         Assert.Contains("OrphanText", ex.Message);
@@ -303,6 +324,27 @@ internal class RegexParamOnNonRegexTokenizerEntity {
     public int Id { get; set; }
     [Bm25Text(Tokenizer = Bm25Tokenizer.Default, RegexPattern = "neuro.*")]
     public string Content { get; set; } = null!;
+}
+
+[Bm25Index(nameof(Id), nameof(Rating))]
+internal class NotIndexedNumericEntity {
+    public int Id { get; set; }
+    [Bm25Numeric(Indexed = false)]
+    public int Rating { get; set; }
+}
+
+[Bm25Index(nameof(Id), nameof(InStock))]
+internal class NotIndexedBooleanEntity {
+    public int Id { get; set; }
+    [Bm25Boolean(Indexed = false)]
+    public bool InStock { get; set; }
+}
+
+[Bm25Index(nameof(Id), nameof(PublishedAt))]
+internal class NotIndexedDateTimeEntity {
+    public int Id { get; set; }
+    [Bm25DateTime(Indexed = false)]
+    public DateTime PublishedAt { get; set; }
 }
 
 internal class OrphanNoIndexEntity {

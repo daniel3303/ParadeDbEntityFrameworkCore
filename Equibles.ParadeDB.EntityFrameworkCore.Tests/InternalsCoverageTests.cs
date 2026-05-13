@@ -139,5 +139,24 @@ public class InternalsCoverageTests {
         var rebuilt = Assert.IsType<ParadeDbNamedArgFunctionExpression>(result);
         Assert.NotSame(expr, rebuilt);
     }
+
+    /// <summary>
+    /// Mirror of the named-arg rebuild test for <see cref="ParadeDbModifiedQueryExpression"/>:
+    /// when the wrapped inner gets folded by the processor, the wrapper has to be rebuilt
+    /// around the new instance — otherwise downstream visitors keep seeing the stale child.
+    /// </summary>
+    [Fact]
+    public void NullabilityProcessor_ModifiedQueryExpression_rebuilds_when_inner_simplified() {
+        var processor = CreateProcessor();
+        var sql = Services().GetService<ISqlExpressionFactory>()!;
+        var inner = sql.IsNotNull(sql.Constant("hi"));
+        var expr = new ParadeDbModifiedQueryExpression(inner, "::pdb.boost(2)", inner.Type, inner.TypeMapping);
+
+        var result = InvokeVisitCustom(processor, expr);
+
+        var rebuilt = Assert.IsType<ParadeDbModifiedQueryExpression>(result);
+        Assert.NotSame(expr, rebuilt);
+        Assert.Equal("::pdb.boost(2)", rebuilt.ModifierSuffix);
+    }
 }
 
