@@ -92,6 +92,8 @@ public class Article
 
 A property may only have one `[Bm25*]` attribute, and that property must be listed in the entity's `[Bm25Index]` columns — orphan attributes throw at model-build time.
 
+> **Column naming note.** Some pg_search functions (`pdb.more_like_this`, JSON `term` filters via `JsonSearch`) generate internal SQL that references columns *unquoted*, so PostgreSQL folds them to lowercase. If your entity's properties map to PascalCase columns (the EF Core default), those functions will fail with `column "id" does not exist`. The simplest fix is to map columns to `snake_case` — either with the [EFCore.NamingConventions](https://github.com/efcore/EFCore.NamingConventions) package (`npgsql.UseSnakeCaseNamingConvention()`) or explicit `[Column("snake_case")]` per property. Basic search operators (`Matches`, `MatchesPhrase`, `MatchesFuzzy`, `Score`, `Snippet`, `Parse`, `Regex`, `PhrasePrefix`) work with PascalCase columns since they reference the column directly in the LINQ expression.
+
 ### 4. Create a migration
 
 ```bash
@@ -390,7 +392,7 @@ SELECT * FROM "Articles" WHERE "Id" @@@ pdb.more_like_this(3, ARRAY['description
 
 ### JSON Query Search
 
-For complex queries combining full-text search with term filters, use `ParadeDbJsonQuery` to build structured JSON queries. This translates to the `@@@` operator with `::pdb.query` cast.
+For complex queries combining full-text search with term filters, use `ParadeDbJsonQuery` to build structured JSON queries. This translates to the `@@@` operator with `::jsonb` cast.
 
 ```csharp
 // Build a boolean query combining parse + term filters
@@ -432,7 +434,7 @@ WHERE "Id" @@@ '{"boolean":{"must":[
     {"parse":{"query_string":"revenue growth"}},
     {"term":{"field":"DocumentId","value":"..."}},
     {"term":{"field":"DocumentType","value":10}}
-]}}'::pdb.query
+]}}'::jsonb
 ORDER BY pdb.score("Id") DESC
 LIMIT 5
 ```

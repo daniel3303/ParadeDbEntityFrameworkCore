@@ -268,7 +268,7 @@ public sealed class ParadeDbMethodCallTranslator : IMethodCallTranslator {
         if (method == JsonSearchMethod) {
             var jsonExpr = Map(arguments[2]);
             var castExpr = new ParadeDbModifiedQueryExpression(
-                jsonExpr, "::pdb.query", jsonExpr.Type, jsonExpr.TypeMapping);
+                jsonExpr, "::jsonb", jsonExpr.Type, jsonExpr.TypeMapping);
             return MakeBinaryBool(arguments[1], "@@@", castExpr);
         }
 
