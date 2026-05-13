@@ -218,7 +218,7 @@ public static class ParadeDbFunctions {
     // ── JSON Query Search ────────────────────────────────────────────
 
     /// <summary>
-    /// JSON query search. Translates to: keyField @@@ 'jsonQuery'::pdb.query.
+    /// JSON query search. Translates to: keyField @@@ 'jsonQuery'::jsonb.
     /// Executes a structured query using ParadeDB's JSON query syntax.
     /// Build the query string using <see cref="ParadeDbJsonQuery"/>.
     /// </summary>

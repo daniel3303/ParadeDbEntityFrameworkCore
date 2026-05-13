@@ -238,7 +238,7 @@ public class QueryTranslationTests : IDisposable {
         var json = ParadeDbJsonQuery.Parse("revenue growth").ToJson();
         var sql = Sql(_db.Chunks.Where(c => EF.Functions.JsonSearch(c.Id, json)));
         Assert.Contains("@@@", sql);
-        Assert.Contains("::pdb.query", sql);
+        Assert.Contains("::jsonb", sql);
     }
 
     [Fact]
@@ -249,7 +249,7 @@ public class QueryTranslationTests : IDisposable {
                 ParadeDbJsonQuery.Term("DocumentType", 10)));
         var sql = Sql(_db.Chunks.Where(c => EF.Functions.JsonSearch(c.Id, query.ToJson())));
         Assert.Contains("@@@", sql);
-        Assert.Contains("::pdb.query", sql);
+        Assert.Contains("::jsonb", sql);
     }
 
     [Fact]
@@ -259,7 +259,7 @@ public class QueryTranslationTests : IDisposable {
             .Where(c => EF.Functions.JsonSearch(c.Id, json))
             .OrderByDescending(c => EF.Functions.Score(c.Id)));
         Assert.Contains("@@@", sql);
-        Assert.Contains("::pdb.query", sql);
+        Assert.Contains("::jsonb", sql);
         Assert.Contains("pdb.score(", sql);
         Assert.Contains("ORDER BY", sql);
     }
@@ -280,7 +280,7 @@ public class QueryTranslationTests : IDisposable {
         var sql = Sql(_db.Chunks
             .Where(c => EF.Functions.JsonSearch(c.Id, json) && c.DocumentType > 5));
         Assert.Contains("@@@", sql);
-        Assert.Contains("::pdb.query", sql);
+        Assert.Contains("::jsonb", sql);
         Assert.Contains(">", sql);
     }
 
@@ -290,7 +290,7 @@ public class QueryTranslationTests : IDisposable {
         var sqlExt = Sql(_db.Chunks.JsonSearch(c => c.Id, query));
         var sqlDirect = Sql(_db.Chunks.Where(c => EF.Functions.JsonSearch(c.Id, query.ToJson())));
         Assert.Contains("@@@", sqlExt);
-        Assert.Contains("::pdb.query", sqlExt);
+        Assert.Contains("::jsonb", sqlExt);
         Assert.Contains("@@@", sqlDirect);
     }
 
@@ -301,7 +301,7 @@ public class QueryTranslationTests : IDisposable {
                 ParadeDbJsonQuery.Parse("revenue growth"),
                 ParadeDbJsonQuery.Term("DocumentType", 10))));
         Assert.Contains("@@@", sql);
-        Assert.Contains("::pdb.query", sql);
+        Assert.Contains("::jsonb", sql);
     }
 
     // ── Combining with LINQ ───────────────────────────────────────────

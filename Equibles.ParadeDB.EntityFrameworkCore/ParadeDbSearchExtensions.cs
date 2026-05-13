@@ -16,7 +16,7 @@ public static class ParadeDbSearchExtensions {
 
     /// <summary>
     /// Adds a WHERE clause with a ParadeDB boolean JSON query built inline.
-    /// Translates to: <c>keyField @@@ 'json'::pdb.query</c>.
+    /// Translates to: <c>keyField @@@ 'json'::jsonb</c>.
     /// </summary>
     public static IQueryable<T> JsonSearch<T>(this IQueryable<T> source,
         Expression<Func<T, object>> keyField, Action<ParadeDbBooleanQuery> configure) where T : class {
@@ -25,7 +25,7 @@ public static class ParadeDbSearchExtensions {
 
     /// <summary>
     /// Adds a WHERE clause with a ParadeDB JSON query.
-    /// Translates to: <c>keyField @@@ 'json'::pdb.query</c>.
+    /// Translates to: <c>keyField @@@ 'json'::jsonb</c>.
     /// </summary>
     public static IQueryable<T> JsonSearch<T>(this IQueryable<T> source,
         Expression<Func<T, object>> keyField, ParadeDbJsonQuery query) where T : class {
