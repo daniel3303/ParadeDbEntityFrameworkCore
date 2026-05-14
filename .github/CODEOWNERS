@@ -1,0 +1,4 @@
+# Auto-assigns @daniel3303 as the reviewer for any pull request.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+* @daniel3303
