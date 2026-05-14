@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] — 2026-05-14
+
 ### Fixed
 
 - `ParadeDbJsonQuery.FuzzyTerm`, `Parse`, and `Match` (4-arg) now emit their boolean option keys unconditionally so `transpositionCostOne: false` (and other `false` flags) actually disable the option instead of falling back to pg_search's default ([#60](https://github.com/daniel3303/ParadeDbEntityFrameworkCore/pull/60), closes [#47](https://github.com/daniel3303/ParadeDbEntityFrameworkCore/issues/47)).
@@ -82,7 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release: `[Bm25Index]` attribute + EF Core convention to emit `pg_search` BM25 indexes via migrations.
 
-[Unreleased]: https://github.com/daniel3303/ParadeDbEntityFrameworkCore/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/daniel3303/ParadeDbEntityFrameworkCore/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/daniel3303/ParadeDbEntityFrameworkCore/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/daniel3303/ParadeDbEntityFrameworkCore/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/daniel3303/ParadeDbEntityFrameworkCore/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/daniel3303/ParadeDbEntityFrameworkCore/compare/v1.0.0...v1.1.0
