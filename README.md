@@ -486,24 +486,6 @@ var results = await dbContext.Articles
     .ToListAsync();
 ```
 
-## How it works
-
-### Index creation
-
-The library hooks into EF Core's model finalization pipeline via `IConventionSetPlugin`. During model building, it:
-
-1. Scans entity types for `[Bm25Index]` attributes
-2. Creates database indexes with the `bm25` index method
-3. Sets the `key_field` storage parameter (required by pg_search)
-4. Reads `[Bm25Text]` / `[Bm25Numeric]` / `[Bm25Boolean]` / `[Bm25DateTime]` / `[Bm25Json]` from the indexed properties and emits the corresponding `text_fields` / `numeric_fields` / `boolean_fields` / `datetime_fields` / `json_fields` JSON storage parameters
-5. Registers the `pg_search` PostgreSQL extension
-
-All of this is translated into standard EF Core migrations — no manual SQL required.
-
-### Query translation
-
-LINQ methods on `EF.Functions` are translated to SQL via `IMethodCallTranslatorPlugin`. The mapping for each method is shown alongside its example in the [Querying](#querying) section above.
-
 ## Contributing
 
 The repo uses [CSharpier](https://csharpier.com) for formatting and a [`prek`](https://github.com/j178/prek) (or `pre-commit`-compatible) hook bundle for the usual hygiene checks (`end-of-file-fixer`, `trailing-whitespace`, `markdownlint`, `codespell`, etc.).
