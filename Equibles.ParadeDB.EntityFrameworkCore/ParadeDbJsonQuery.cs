@@ -149,20 +149,21 @@ public sealed class ParadeDbJsonQuery {
 
     /// <summary>
     /// Range query. Produces bounds as <c>{"included":N}</c> or <c>{"excluded":N}</c>.
-    /// Pass <c>null</c> for either bound to omit it.
+    /// Pass <c>null</c> for either bound to make that side unbounded (emitted as JSON <c>null</c>,
+    /// which pg_search requires — omitting the key throws a deserialization panic).
     /// Set <paramref name="isDatetime"/> to true for DateTime range queries (adds <c>"is_datetime":true</c>).
     /// </summary>
     public static ParadeDbJsonQuery Range(string field, object lowerBound, object upperBound,
         bool lowerInclusive = true, bool upperInclusive = false, bool isDatetime = false) {
-        var inner = new JsonObject { ["field"] = field };
-        if (lowerBound != null) {
-            var key = lowerInclusive ? "included" : "excluded";
-            inner["lower_bound"] = new JsonObject { [key] = CreateJsonValue(lowerBound) };
-        }
-        if (upperBound != null) {
-            var key = upperInclusive ? "included" : "excluded";
-            inner["upper_bound"] = new JsonObject { [key] = CreateJsonValue(upperBound) };
-        }
+        var inner = new JsonObject {
+            ["field"] = field,
+            ["lower_bound"] = lowerBound != null
+                ? new JsonObject { [lowerInclusive ? "included" : "excluded"] = CreateJsonValue(lowerBound) }
+                : null,
+            ["upper_bound"] = upperBound != null
+                ? new JsonObject { [upperInclusive ? "included" : "excluded"] = CreateJsonValue(upperBound) }
+                : null
+        };
         if (isDatetime) inner["is_datetime"] = true;
         return new(new JsonObject { ["range"] = inner });
     }
