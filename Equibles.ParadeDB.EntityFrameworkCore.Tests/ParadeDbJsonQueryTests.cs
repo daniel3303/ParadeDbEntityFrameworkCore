@@ -163,8 +163,8 @@ public class ParadeDbJsonQueryTests {
         var json = ParadeDbJsonQuery.Range("Price", 10, null).ToJson();
         var doc = Parse(json);
         var range = doc.GetProperty("range");
-        Assert.True(range.TryGetProperty("lower_bound", out _));
-        Assert.False(range.TryGetProperty("upper_bound", out _));
+        Assert.Equal(10, range.GetProperty("lower_bound").GetProperty("included").GetInt32());
+        Assert.Equal(JsonValueKind.Null, range.GetProperty("upper_bound").ValueKind);
     }
 
     [Fact]
@@ -179,8 +179,8 @@ public class ParadeDbJsonQueryTests {
     public void Range_with_upper_bound_only_creates_correct_json() {
         var json = ParadeDbJsonQuery.Range("Price", null, 100).ToJson();
         var range = Parse(json).GetProperty("range");
-        Assert.False(range.TryGetProperty("lower_bound", out _));
-        Assert.True(range.TryGetProperty("upper_bound", out _));
+        Assert.Equal(JsonValueKind.Null, range.GetProperty("lower_bound").ValueKind);
+        Assert.Equal(100, range.GetProperty("upper_bound").GetProperty("excluded").GetInt32());
     }
 
     [Fact]

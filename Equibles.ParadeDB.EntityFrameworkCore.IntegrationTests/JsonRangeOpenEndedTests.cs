@@ -9,7 +9,7 @@ public class JsonRangeOpenEndedTests(ParadeDbFixture fixture) {
     // existing JsonQueryTests/JsonDateTimeRangeTests always pass both bounds,
     // so a regression that always emits "upper_bound" (or crashes on null)
     // would only be caught here.
-    [Fact(Skip = "GH-51 — passing null bound emits JSON pg_search rejects (missing field upper_bound panic)")]
+    [Fact]
     public async Task Range_WithNullUpperBound_MatchesAllValuesAtOrAboveLowerBound() {
         await using var ctx = fixture.CreateDbContext();
 
