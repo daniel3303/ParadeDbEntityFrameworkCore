@@ -1,0 +1,35 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      microsoft:
+        patterns:
+          - "Microsoft.*"
+          - "System.*"
+      entityframework:
+        patterns:
+          - "*EntityFrameworkCore*"
+          - "Npgsql*"
+      testing:
+        patterns:
+          - "xunit*"
+          - "Testcontainers*"
+          - "coverlet*"
+          - "*Testing*"
+      tooling:
+        patterns:
+          - "CSharpier*"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns:
+          - "*"
