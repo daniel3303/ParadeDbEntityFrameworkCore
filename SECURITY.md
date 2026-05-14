@@ -13,7 +13,7 @@ The latest published NuGet release receives security updates. Older versions are
 
 **Please do not open a public GitHub issue for security problems.**
 
-Use GitHub's [private vulnerability reporting](https://github.com/daniel3303/ParadeDbEntityFrameworkCore/security/advisories/new) (preferred), or email <dev2@comudel.com>.
+Use GitHub's [private vulnerability reporting](https://github.com/daniel3303/ParadeDbEntityFrameworkCore/security/advisories/new) (preferred), or email <hello@danielapoliveira.com>.
 
 When reporting, include:
 
