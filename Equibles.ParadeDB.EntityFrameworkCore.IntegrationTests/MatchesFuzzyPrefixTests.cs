@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
 [Collection(nameof(ParadeDbCollection))]
-public class MatchesFuzzyPrefixTests(ParadeDbFixture fixture) {
+public class MatchesFuzzyPrefixTests(ParadeDbFixture fixture)
+{
     // Verifies the 5-arg MatchesFuzzy overload's "prefix" flag — exempts the
     // initial substring from edit distance, equivalent to prefix matching.
     // MatchesFuzzyOptionsTests and MatchesAllFuzzyOptionsTests both only
@@ -12,7 +13,8 @@ public class MatchesFuzzyPrefixTests(ParadeDbFixture fixture) {
     // untested. A regression that swaps the prefix and transpositionCostOne
     // args (both bool, same position-class) would flip this test.
     [Fact]
-    public async Task MatchesFuzzy_WithPrefixTrue_MatchesTokensStartingWithQuery() {
+    public async Task MatchesFuzzy_WithPrefixTrue_MatchesTokensStartingWithQuery()
+    {
         await using var ctx = fixture.CreateDbContext();
 
         // "neurla" is Levenshtein distance 2 from "neural". With distance: 1
@@ -20,14 +22,28 @@ public class MatchesFuzzyPrefixTests(ParadeDbFixture fixture) {
         // With distance: 1 and prefix: true → the prefix flag exempts the
         // initial substring from edit distance, so distance: 1 is enough
         // → matches Article 1.
-        var prefixOff = await ctx.Articles
-            .Where(a => EF.Functions.MatchesFuzzy(a.Content, "neurla", 1,
-                prefix: false, transpositionCostOne: false))
+        var prefixOff = await ctx
+            .Articles.Where(a =>
+                EF.Functions.MatchesFuzzy(
+                    a.Content,
+                    "neurla",
+                    1,
+                    prefix: false,
+                    transpositionCostOne: false
+                )
+            )
             .Select(a => a.Title)
             .ToListAsync();
-        var prefixOn = await ctx.Articles
-            .Where(a => EF.Functions.MatchesFuzzy(a.Content, "neurla", 1,
-                prefix: true, transpositionCostOne: false))
+        var prefixOn = await ctx
+            .Articles.Where(a =>
+                EF.Functions.MatchesFuzzy(
+                    a.Content,
+                    "neurla",
+                    1,
+                    prefix: true,
+                    transpositionCostOne: false
+                )
+            )
             .Select(a => a.Title)
             .ToListAsync();
 

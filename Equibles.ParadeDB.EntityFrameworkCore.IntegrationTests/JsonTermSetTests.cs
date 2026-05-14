@@ -3,19 +3,21 @@ using Microsoft.EntityFrameworkCore;
 namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
 [Collection(nameof(ParadeDbCollection))]
-public class JsonTermSetTests(ParadeDbFixture fixture) {
+public class JsonTermSetTests(ParadeDbFixture fixture)
+{
     // Verifies ParadeDbJsonQuery.TermSet produces {"term_set":{"field":"...","terms":[...]}}
     // — matches any of the listed exact terms on the Raw-tokenized category column.
     // Distinct from CLR MatchesTermSet (which translates to `=== ARRAY[...]`); this
     // exercises the JSON @@@ jsonb path and the params object[] → JsonArray conversion.
     [Fact]
-    public async Task TermSet_MultipleCategories_MatchesAnyListedTerm() {
+    public async Task TermSet_MultipleCategories_MatchesAnyListedTerm()
+    {
         await using var ctx = fixture.CreateDbContext();
 
         var query = ParadeDbJsonQuery.TermSet("category", "machine-learning", "cooking");
 
-        var hits = await ctx.Articles
-            .JsonSearch(a => a.Id, query)
+        var hits = await ctx
+            .Articles.JsonSearch(a => a.Id, query)
             .Select(a => a.Title)
             .ToListAsync();
 

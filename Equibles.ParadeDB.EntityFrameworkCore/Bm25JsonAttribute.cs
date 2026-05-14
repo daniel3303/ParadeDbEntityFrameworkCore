@@ -5,7 +5,8 @@ namespace Equibles.ParadeDB.EntityFrameworkCore;
 /// settings as <see cref="Bm25TextAttribute"/> plus <see cref="ExpandDots"/>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public sealed class Bm25JsonAttribute : Attribute {
+public sealed class Bm25JsonAttribute : Attribute
+{
     public Bm25Tokenizer Tokenizer { get; set; }
 
     /// <summary>Required when <see cref="Tokenizer"/> is <see cref="Bm25Tokenizer.Ngram"/>.</summary>

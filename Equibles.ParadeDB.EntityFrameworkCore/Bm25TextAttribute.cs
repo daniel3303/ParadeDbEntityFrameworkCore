@@ -5,7 +5,8 @@ namespace Equibles.ParadeDB.EntityFrameworkCore;
 /// in the entity's <see cref="Bm25IndexAttribute"/> column set.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public sealed class Bm25TextAttribute : Attribute {
+public sealed class Bm25TextAttribute : Attribute
+{
     public Bm25Tokenizer Tokenizer { get; set; }
 
     /// <summary>Required when <see cref="Tokenizer"/> is <see cref="Bm25Tokenizer.Ngram"/>.</summary>

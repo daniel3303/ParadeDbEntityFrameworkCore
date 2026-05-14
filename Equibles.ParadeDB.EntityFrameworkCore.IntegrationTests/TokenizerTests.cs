@@ -3,13 +3,15 @@ using Microsoft.EntityFrameworkCore;
 namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
 [Collection(nameof(ParadeDbCollection))]
-public class TokenizerTests(ParadeDbFixture fixture) {
+public class TokenizerTests(ParadeDbFixture fixture)
+{
     [Fact]
-    public async Task KeywordTokenizer_TreatsCodeAsSingleToken() {
+    public async Task KeywordTokenizer_TreatsCodeAsSingleToken()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var hits = await ctx.KeywordRecords
-            .Where(k => EF.Functions.MatchesTerm(k.Code, "ABC-123"))
+        var hits = await ctx
+            .KeywordRecords.Where(k => EF.Functions.MatchesTerm(k.Code, "ABC-123"))
             .Select(k => k.Code)
             .ToListAsync();
 
@@ -18,11 +20,12 @@ public class TokenizerTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task NgramTokenizer_MatchesSubstring() {
+    public async Task NgramTokenizer_MatchesSubstring()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var hits = await ctx.NgramRecords
-            .Where(n => EF.Functions.MatchesTerm(n.Body, "frag"))
+        var hits = await ctx
+            .NgramRecords.Where(n => EF.Functions.MatchesTerm(n.Body, "frag"))
             .Select(n => n.Body)
             .ToListAsync();
 
@@ -30,11 +33,12 @@ public class TokenizerTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task IcuTokenizer_HandlesUnicodeText() {
+    public async Task IcuTokenizer_HandlesUnicodeText()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var hits = await ctx.IcuRecords
-            .Where(i => EF.Functions.Matches(i.Body, "café"))
+        var hits = await ctx
+            .IcuRecords.Where(i => EF.Functions.Matches(i.Body, "café"))
             .Select(i => i.Body)
             .ToListAsync();
 
@@ -42,11 +46,12 @@ public class TokenizerTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task SourceCodeTokenizer_SplitsCamelCase() {
+    public async Task SourceCodeTokenizer_SplitsCamelCase()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var hits = await ctx.SourceCodeRecords
-            .Where(s => EF.Functions.Matches(s.Snippet, "user"))
+        var hits = await ctx
+            .SourceCodeRecords.Where(s => EF.Functions.Matches(s.Snippet, "user"))
             .Select(s => s.Snippet)
             .ToListAsync();
 
@@ -54,11 +59,12 @@ public class TokenizerTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task RegexTokenizer_TokenizesByPattern() {
+    public async Task RegexTokenizer_TokenizesByPattern()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var hits = await ctx.RegexRecords
-            .Where(r => EF.Functions.Matches(r.Body, "alpha"))
+        var hits = await ctx
+            .RegexRecords.Where(r => EF.Functions.Matches(r.Body, "alpha"))
             .Select(r => r.Body)
             .ToListAsync();
 
@@ -66,12 +72,13 @@ public class TokenizerTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task GermanStemmer_MatchesGermanWordVariants() {
+    public async Task GermanStemmer_MatchesGermanWordVariants()
+    {
         await using var ctx = fixture.CreateDbContext();
 
         // 'Häuser' stems to a German root; 'Haus' should match via the same stem.
-        var hits = await ctx.GermanArticles
-            .Where(g => EF.Functions.Matches(g.Content, "Haus"))
+        var hits = await ctx
+            .GermanArticles.Where(g => EF.Functions.Matches(g.Content, "Haus"))
             .Select(g => g.Content)
             .ToListAsync();
 

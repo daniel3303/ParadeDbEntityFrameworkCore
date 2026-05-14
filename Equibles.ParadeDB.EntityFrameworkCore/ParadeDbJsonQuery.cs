@@ -6,17 +6,18 @@ namespace Equibles.ParadeDB.EntityFrameworkCore;
 /// Builds a ParadeDB JSON query for use with the <c>@@@</c> operator.
 /// Use static factory methods to create query nodes, then call <see cref="ToJson"/> to serialize.
 /// </summary>
-public sealed class ParadeDbJsonQuery {
+public sealed class ParadeDbJsonQuery
+{
     private readonly JsonNode _node;
 
-    internal ParadeDbJsonQuery(JsonNode node) {
+    internal ParadeDbJsonQuery(JsonNode node)
+    {
         _node = node;
     }
 
     /// <summary>Serializes the query to a compact JSON string.</summary>
-    public string ToJson() => _node.ToJsonString(new System.Text.Json.JsonSerializerOptions {
-        WriteIndented = false
-    });
+    public string ToJson() =>
+        _node.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = false });
 
     /// <inheritdoc/>
     public override string ToString() => ToJson();
@@ -35,11 +36,13 @@ public sealed class ParadeDbJsonQuery {
     /// <summary>
     /// Parse query with options. Produces: <c>{"parse":{"query_string":"...","lenient":true,"conjunction_mode":true}}</c>.
     /// </summary>
-    public static ParadeDbJsonQuery Parse(string queryString, bool lenient, bool conjunctionMode) {
-        var inner = new JsonObject {
+    public static ParadeDbJsonQuery Parse(string queryString, bool lenient, bool conjunctionMode)
+    {
+        var inner = new JsonObject
+        {
             ["query_string"] = queryString,
             ["lenient"] = lenient,
-            ["conjunction_mode"] = conjunctionMode
+            ["conjunction_mode"] = conjunctionMode,
         };
         return new(new JsonObject { ["parse"] = inner });
     }
@@ -50,17 +53,29 @@ public sealed class ParadeDbJsonQuery {
     /// Exact term match. Produces: <c>{"term":{"field":"...","value":...}}</c>.
     /// </summary>
     public static ParadeDbJsonQuery Term(string field, object value) =>
-        new(new JsonObject { ["term"] = new JsonObject { ["field"] = field, ["value"] = CreateJsonValue(value) } });
+        new(
+            new JsonObject
+            {
+                ["term"] = new JsonObject { ["field"] = field, ["value"] = CreateJsonValue(value) },
+            }
+        );
 
     // ── Term Set ─────────────────────────────────────────────────────
 
     /// <summary>
     /// Multi-term match. Produces: <c>{"term_set":{"field":"...","terms":[...]}}</c>.
     /// </summary>
-    public static ParadeDbJsonQuery TermSet(string field, params object[] terms) {
+    public static ParadeDbJsonQuery TermSet(string field, params object[] terms)
+    {
         var arr = new JsonArray();
-        foreach (var t in terms) arr.Add(CreateJsonValue(t));
-        return new(new JsonObject { ["term_set"] = new JsonObject { ["field"] = field, ["terms"] = arr } });
+        foreach (var t in terms)
+            arr.Add(CreateJsonValue(t));
+        return new(
+            new JsonObject
+            {
+                ["term_set"] = new JsonObject { ["field"] = field, ["terms"] = arr },
+            }
+        );
     }
 
     // ── Match ────────────────────────────────────────────────────────
@@ -69,17 +84,29 @@ public sealed class ParadeDbJsonQuery {
     /// Match query with field. Produces: <c>{"match":{"field":"...","value":"..."}}</c>.
     /// </summary>
     public static ParadeDbJsonQuery Match(string value, string field) =>
-        new(new JsonObject { ["match"] = new JsonObject { ["field"] = field, ["value"] = value } });
+        new(
+            new JsonObject
+            {
+                ["match"] = new JsonObject { ["field"] = field, ["value"] = value },
+            }
+        );
 
     /// <summary>
     /// Match query with field and options.
     /// </summary>
-    public static ParadeDbJsonQuery Match(string value, string field, int distance, bool conjunctionMode) {
-        var inner = new JsonObject {
+    public static ParadeDbJsonQuery Match(
+        string value,
+        string field,
+        int distance,
+        bool conjunctionMode
+    )
+    {
+        var inner = new JsonObject
+        {
             ["field"] = field,
             ["value"] = value,
             ["distance"] = distance,
-            ["conjunction_mode"] = conjunctionMode
+            ["conjunction_mode"] = conjunctionMode,
         };
         return new(new JsonObject { ["match"] = inner });
     }
@@ -90,18 +117,36 @@ public sealed class ParadeDbJsonQuery {
     /// Fuzzy term match. Produces: <c>{"fuzzy_term":{"field":"...","value":"...","distance":N}}</c>.
     /// </summary>
     public static ParadeDbJsonQuery FuzzyTerm(string field, string value, int distance) =>
-        new(new JsonObject { ["fuzzy_term"] = new JsonObject { ["field"] = field, ["value"] = value, ["distance"] = distance } });
+        new(
+            new JsonObject
+            {
+                ["fuzzy_term"] = new JsonObject
+                {
+                    ["field"] = field,
+                    ["value"] = value,
+                    ["distance"] = distance,
+                },
+            }
+        );
 
     /// <summary>
     /// Fuzzy term match with full options.
     /// </summary>
-    public static ParadeDbJsonQuery FuzzyTerm(string field, string value, int distance, bool prefix, bool transpositionCostOne) {
-        var inner = new JsonObject {
+    public static ParadeDbJsonQuery FuzzyTerm(
+        string field,
+        string value,
+        int distance,
+        bool prefix,
+        bool transpositionCostOne
+    )
+    {
+        var inner = new JsonObject
+        {
             ["field"] = field,
             ["value"] = value,
             ["distance"] = distance,
             ["prefix"] = prefix,
-            ["transposition_cost_one"] = transpositionCostOne
+            ["transposition_cost_one"] = transpositionCostOne,
         };
         return new(new JsonObject { ["fuzzy_term"] = inner });
     }
@@ -111,19 +156,38 @@ public sealed class ParadeDbJsonQuery {
     /// <summary>
     /// Phrase match. Produces: <c>{"phrase":{"field":"...","phrases":[...]}}</c>.
     /// </summary>
-    public static ParadeDbJsonQuery Phrase(string field, params string[] phrases) {
+    public static ParadeDbJsonQuery Phrase(string field, params string[] phrases)
+    {
         var arr = new JsonArray();
-        foreach (var p in phrases) arr.Add(JsonValue.Create(p));
-        return new(new JsonObject { ["phrase"] = new JsonObject { ["field"] = field, ["phrases"] = arr } });
+        foreach (var p in phrases)
+            arr.Add(JsonValue.Create(p));
+        return new(
+            new JsonObject
+            {
+                ["phrase"] = new JsonObject { ["field"] = field, ["phrases"] = arr },
+            }
+        );
     }
 
     /// <summary>
     /// Phrase match with slop.
     /// </summary>
-    public static ParadeDbJsonQuery Phrase(string field, int slop, params string[] phrases) {
+    public static ParadeDbJsonQuery Phrase(string field, int slop, params string[] phrases)
+    {
         var arr = new JsonArray();
-        foreach (var p in phrases) arr.Add(JsonValue.Create(p));
-        return new(new JsonObject { ["phrase"] = new JsonObject { ["field"] = field, ["phrases"] = arr, ["slop"] = slop } });
+        foreach (var p in phrases)
+            arr.Add(JsonValue.Create(p));
+        return new(
+            new JsonObject
+            {
+                ["phrase"] = new JsonObject
+                {
+                    ["field"] = field,
+                    ["phrases"] = arr,
+                    ["slop"] = slop,
+                },
+            }
+        );
     }
 
     // ── Phrase Prefix ────────────────────────────────────────────────
@@ -131,10 +195,17 @@ public sealed class ParadeDbJsonQuery {
     /// <summary>
     /// Phrase prefix match. Produces: <c>{"phrase_prefix":{"field":"...","phrases":[...]}}</c>.
     /// </summary>
-    public static ParadeDbJsonQuery PhrasePrefix(string field, params string[] phrases) {
+    public static ParadeDbJsonQuery PhrasePrefix(string field, params string[] phrases)
+    {
         var arr = new JsonArray();
-        foreach (var p in phrases) arr.Add(JsonValue.Create(p));
-        return new(new JsonObject { ["phrase_prefix"] = new JsonObject { ["field"] = field, ["phrases"] = arr } });
+        foreach (var p in phrases)
+            arr.Add(JsonValue.Create(p));
+        return new(
+            new JsonObject
+            {
+                ["phrase_prefix"] = new JsonObject { ["field"] = field, ["phrases"] = arr },
+            }
+        );
     }
 
     // ── Regex ────────────────────────────────────────────────────────
@@ -143,7 +214,12 @@ public sealed class ParadeDbJsonQuery {
     /// Regex match. Produces: <c>{"regex":{"field":"...","pattern":"..."}}</c>.
     /// </summary>
     public static ParadeDbJsonQuery Regex(string field, string pattern) =>
-        new(new JsonObject { ["regex"] = new JsonObject { ["field"] = field, ["pattern"] = pattern } });
+        new(
+            new JsonObject
+            {
+                ["regex"] = new JsonObject { ["field"] = field, ["pattern"] = pattern },
+            }
+        );
 
     // ── Range ────────────────────────────────────────────────────────
 
@@ -153,18 +229,35 @@ public sealed class ParadeDbJsonQuery {
     /// which pg_search requires — omitting the key throws a deserialization panic).
     /// Set <paramref name="isDatetime"/> to true for DateTime range queries (adds <c>"is_datetime":true</c>).
     /// </summary>
-    public static ParadeDbJsonQuery Range(string field, object lowerBound, object upperBound,
-        bool lowerInclusive = true, bool upperInclusive = false, bool isDatetime = false) {
-        var inner = new JsonObject {
+    public static ParadeDbJsonQuery Range(
+        string field,
+        object lowerBound,
+        object upperBound,
+        bool lowerInclusive = true,
+        bool upperInclusive = false,
+        bool isDatetime = false
+    )
+    {
+        var inner = new JsonObject
+        {
             ["field"] = field,
-            ["lower_bound"] = lowerBound != null
-                ? new JsonObject { [lowerInclusive ? "included" : "excluded"] = CreateJsonValue(lowerBound) }
-                : null,
-            ["upper_bound"] = upperBound != null
-                ? new JsonObject { [upperInclusive ? "included" : "excluded"] = CreateJsonValue(upperBound) }
-                : null
+            ["lower_bound"] =
+                lowerBound != null
+                    ? new JsonObject
+                    {
+                        [lowerInclusive ? "included" : "excluded"] = CreateJsonValue(lowerBound),
+                    }
+                    : null,
+            ["upper_bound"] =
+                upperBound != null
+                    ? new JsonObject
+                    {
+                        [upperInclusive ? "included" : "excluded"] = CreateJsonValue(upperBound),
+                    }
+                    : null,
         };
-        if (isDatetime) inner["is_datetime"] = true;
+        if (isDatetime)
+            inner["is_datetime"] = true;
         return new(new JsonObject { ["range"] = inner });
     }
 
@@ -174,7 +267,12 @@ public sealed class ParadeDbJsonQuery {
     /// Wraps a query with a boost factor. Produces: <c>{"boost":{"query":{...},"factor":N}}</c>.
     /// </summary>
     public static ParadeDbJsonQuery Boost(ParadeDbJsonQuery query, double factor) =>
-        new(new JsonObject { ["boost"] = new JsonObject { ["query"] = query.CloneNode(), ["factor"] = factor } });
+        new(
+            new JsonObject
+            {
+                ["boost"] = new JsonObject { ["query"] = query.CloneNode(), ["factor"] = factor },
+            }
+        );
 
     // ── Const Score ──────────────────────────────────────────────────
 
@@ -182,7 +280,16 @@ public sealed class ParadeDbJsonQuery {
     /// Wraps a query with a constant score. Produces: <c>{"const_score":{"query":{...},"score":N}}</c>.
     /// </summary>
     public static ParadeDbJsonQuery ConstScore(ParadeDbJsonQuery query, double score) =>
-        new(new JsonObject { ["const_score"] = new JsonObject { ["query"] = query.CloneNode(), ["score"] = score } });
+        new(
+            new JsonObject
+            {
+                ["const_score"] = new JsonObject
+                {
+                    ["query"] = query.CloneNode(),
+                    ["score"] = score,
+                },
+            }
+        );
 
     // ── Exists ───────────────────────────────────────────────────────
 
@@ -197,17 +304,18 @@ public sealed class ParadeDbJsonQuery {
     /// <summary>
     /// Match all documents. Produces: <c>{"all":null}</c>.
     /// </summary>
-    public static ParadeDbJsonQuery All() =>
-        new(new JsonObject { ["all"] = null });
+    public static ParadeDbJsonQuery All() => new(new JsonObject { ["all"] = null });
 
     // ── Disjunction Max ──────────────────────────────────────────────
 
     /// <summary>
     /// Disjunction max query. Produces: <c>{"disjunction_max":{"disjuncts":[...]}}</c>.
     /// </summary>
-    public static ParadeDbJsonQuery DisjunctionMax(params ParadeDbJsonQuery[] queries) {
+    public static ParadeDbJsonQuery DisjunctionMax(params ParadeDbJsonQuery[] queries)
+    {
         var arr = new JsonArray();
-        foreach (var q in queries) arr.Add(q.CloneNode());
+        foreach (var q in queries)
+            arr.Add(q.CloneNode());
         return new(new JsonObject { ["disjunction_max"] = new JsonObject { ["disjuncts"] = arr } });
     }
 
@@ -224,7 +332,8 @@ public sealed class ParadeDbJsonQuery {
     /// <summary>
     /// Boolean query combining must/should/must_not clauses.
     /// </summary>
-    public static ParadeDbJsonQuery Boolean(Action<ParadeDbBooleanQuery> configure) {
+    public static ParadeDbJsonQuery Boolean(Action<ParadeDbBooleanQuery> configure)
+    {
         var builder = new ParadeDbBooleanQuery();
         configure(builder);
         return new(builder.ToJsonNode());
@@ -232,18 +341,20 @@ public sealed class ParadeDbJsonQuery {
 
     // ── Helpers ──────────────────────────────────────────────────────
 
-    internal static JsonNode CreateJsonValue(object value) => value switch {
-        string s => JsonValue.Create(s),
-        int i => JsonValue.Create(i),
-        long l => JsonValue.Create(l),
-        double d => JsonValue.Create(d),
-        float f => JsonValue.Create(f),
-        bool b => JsonValue.Create(b),
-        Guid g => JsonValue.Create(g.ToString()),
-        DateTime dt => JsonValue.Create(dt.Kind == DateTimeKind.Utc
-            ? dt.ToString("yyyy-MM-ddTHH:mm:ssZ")
-            : dt.ToString("O")),
-        Enum e => JsonValue.Create(Convert.ToInt32(e)),
-        _ => JsonValue.Create(value.ToString())
-    };
+    internal static JsonNode CreateJsonValue(object value) =>
+        value switch
+        {
+            string s => JsonValue.Create(s),
+            int i => JsonValue.Create(i),
+            long l => JsonValue.Create(l),
+            double d => JsonValue.Create(d),
+            float f => JsonValue.Create(f),
+            bool b => JsonValue.Create(b),
+            Guid g => JsonValue.Create(g.ToString()),
+            DateTime dt => JsonValue.Create(
+                dt.Kind == DateTimeKind.Utc ? dt.ToString("yyyy-MM-ddTHH:mm:ssZ") : dt.ToString("O")
+            ),
+            Enum e => JsonValue.Create(Convert.ToInt32(e)),
+            _ => JsonValue.Create(value.ToString()),
+        };
 }

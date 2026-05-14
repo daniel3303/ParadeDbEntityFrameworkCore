@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
 [Collection(nameof(ParadeDbCollection))]
-public class JsonParseOptionsTests(ParadeDbFixture fixture) {
+public class JsonParseOptionsTests(ParadeDbFixture fixture)
+{
     // Verifies ParadeDbJsonQuery.Parse(string, bool, bool) emits the JSON keys
     // "lenient" and "conjunction_mode" — distinct from the 1-arg overload that
     // emits only "query_string". The CLR sibling EF.Functions.Parse(...) is
@@ -11,19 +12,28 @@ public class JsonParseOptionsTests(ParadeDbFixture fixture) {
     // regression renaming either key (e.g. "lenient" → "strict") would silently
     // flip the AND/OR meaning of every unquoted multi-term parse query.
     [Fact]
-    public async Task Parse_WithConjunctionMode_RequiresAllTermsInsteadOfAny() {
+    public async Task Parse_WithConjunctionMode_RequiresAllTermsInsteadOfAny()
+    {
         await using var ctx = fixture.CreateDbContext();
 
         // "neural" appears only in Article 1; "quantum" only in Article 3 — no article has both.
-        var orQuery = ParadeDbJsonQuery.Parse("neural quantum", lenient: true, conjunctionMode: false);
-        var andQuery = ParadeDbJsonQuery.Parse("neural quantum", lenient: true, conjunctionMode: true);
+        var orQuery = ParadeDbJsonQuery.Parse(
+            "neural quantum",
+            lenient: true,
+            conjunctionMode: false
+        );
+        var andQuery = ParadeDbJsonQuery.Parse(
+            "neural quantum",
+            lenient: true,
+            conjunctionMode: true
+        );
 
-        var orHits = await ctx.Articles
-            .JsonSearch(a => a.Id, orQuery)
+        var orHits = await ctx
+            .Articles.JsonSearch(a => a.Id, orQuery)
             .Select(a => a.Title)
             .ToListAsync();
-        var andHits = await ctx.Articles
-            .JsonSearch(a => a.Id, andQuery)
+        var andHits = await ctx
+            .Articles.JsonSearch(a => a.Id, andQuery)
             .Select(a => a.Title)
             .ToListAsync();
 

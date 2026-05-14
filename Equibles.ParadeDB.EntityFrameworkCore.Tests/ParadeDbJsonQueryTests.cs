@@ -5,20 +5,26 @@ namespace Equibles.ParadeDB.EntityFrameworkCore.Tests;
 /// <summary>
 /// Pure CLR tests validating JSON output from <see cref="ParadeDbJsonQuery"/> factory methods.
 /// </summary>
-public class ParadeDbJsonQueryTests {
+public class ParadeDbJsonQueryTests
+{
     private static JsonElement Parse(string json) => JsonDocument.Parse(json).RootElement;
 
     // ── Parse ────────────────────────────────────────────────────────
 
     [Fact]
-    public void Parse_creates_correct_json() {
+    public void Parse_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Parse("revenue growth").ToJson();
         var doc = Parse(json);
-        Assert.Equal("revenue growth", doc.GetProperty("parse").GetProperty("query_string").GetString());
+        Assert.Equal(
+            "revenue growth",
+            doc.GetProperty("parse").GetProperty("query_string").GetString()
+        );
     }
 
     [Fact]
-    public void Parse_with_options_creates_correct_json() {
+    public void Parse_with_options_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Parse("revenue growth", true, true).ToJson();
         var doc = Parse(json);
         var parse = doc.GetProperty("parse");
@@ -30,7 +36,8 @@ public class ParadeDbJsonQueryTests {
     // ── Term ─────────────────────────────────────────────────────────
 
     [Fact]
-    public void Term_with_string_value_creates_correct_json() {
+    public void Term_with_string_value_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Term("DocumentId", "abc-123").ToJson();
         var doc = Parse(json);
         var term = doc.GetProperty("term");
@@ -39,7 +46,8 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Term_with_int_value_creates_correct_json() {
+    public void Term_with_int_value_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Term("DocumentType", 10).ToJson();
         var doc = Parse(json);
         var term = doc.GetProperty("term");
@@ -48,7 +56,8 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Term_with_guid_value_creates_correct_json() {
+    public void Term_with_guid_value_creates_correct_json()
+    {
         var guid = Guid.Parse("1d56ce60-1234-5678-9abc-def012345678");
         var json = ParadeDbJsonQuery.Term("DocumentId", guid).ToJson();
         var doc = Parse(json);
@@ -58,7 +67,8 @@ public class ParadeDbJsonQueryTests {
     // ── Term Set ─────────────────────────────────────────────────────
 
     [Fact]
-    public void TermSet_creates_correct_json() {
+    public void TermSet_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.TermSet("Tags", "gpu", "tpu").ToJson();
         var doc = Parse(json);
         var termSet = doc.GetProperty("term_set");
@@ -72,7 +82,8 @@ public class ParadeDbJsonQueryTests {
     // ── Match ────────────────────────────────────────────────────────
 
     [Fact]
-    public void Match_with_field_and_options_creates_correct_json() {
+    public void Match_with_field_and_options_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Match("shoes", "Content", 2, true).ToJson();
         var doc = Parse(json);
         var match = doc.GetProperty("match");
@@ -85,7 +96,8 @@ public class ParadeDbJsonQueryTests {
     // ── Fuzzy Term ───────────────────────────────────────────────────
 
     [Fact]
-    public void FuzzyTerm_creates_correct_json() {
+    public void FuzzyTerm_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.FuzzyTerm("Content", "machin", 2).ToJson();
         var doc = Parse(json);
         var ft = doc.GetProperty("fuzzy_term");
@@ -95,7 +107,8 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void FuzzyTerm_with_options_creates_correct_json() {
+    public void FuzzyTerm_with_options_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.FuzzyTerm("Content", "machin", 2, true, true).ToJson();
         var doc = Parse(json);
         var ft = doc.GetProperty("fuzzy_term");
@@ -106,7 +119,8 @@ public class ParadeDbJsonQueryTests {
     // ── Phrase ────────────────────────────────────────────────────────
 
     [Fact]
-    public void Phrase_creates_correct_json() {
+    public void Phrase_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Phrase("Content", "neural", "networks").ToJson();
         var doc = Parse(json);
         var phrase = doc.GetProperty("phrase");
@@ -117,7 +131,8 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Phrase_with_slop_creates_correct_json() {
+    public void Phrase_with_slop_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Phrase("Content", 2, "neural", "networks").ToJson();
         var doc = Parse(json);
         var phrase = doc.GetProperty("phrase");
@@ -127,7 +142,8 @@ public class ParadeDbJsonQueryTests {
     // ── Phrase Prefix ────────────────────────────────────────────────
 
     [Fact]
-    public void PhrasePrefix_creates_correct_json() {
+    public void PhrasePrefix_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.PhrasePrefix("Content", "running", "sh").ToJson();
         var doc = Parse(json);
         var pp = doc.GetProperty("phrase_prefix");
@@ -138,7 +154,8 @@ public class ParadeDbJsonQueryTests {
     // ── Regex ────────────────────────────────────────────────────────
 
     [Fact]
-    public void Regex_creates_correct_json() {
+    public void Regex_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Regex("Content", "neuro.*").ToJson();
         var doc = Parse(json);
         var regex = doc.GetProperty("regex");
@@ -149,8 +166,11 @@ public class ParadeDbJsonQueryTests {
     // ── Range ────────────────────────────────────────────────────────
 
     [Fact]
-    public void Range_with_both_bounds_creates_correct_json() {
-        var json = ParadeDbJsonQuery.Range("Price", 10, 100, lowerInclusive: true, upperInclusive: false).ToJson();
+    public void Range_with_both_bounds_creates_correct_json()
+    {
+        var json = ParadeDbJsonQuery
+            .Range("Price", 10, 100, lowerInclusive: true, upperInclusive: false)
+            .ToJson();
         var doc = Parse(json);
         var range = doc.GetProperty("range");
         Assert.Equal("Price", range.GetProperty("field").GetString());
@@ -159,7 +179,8 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Range_with_lower_bound_only_creates_correct_json() {
+    public void Range_with_lower_bound_only_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Range("Price", 10, null).ToJson();
         var doc = Parse(json);
         var range = doc.GetProperty("range");
@@ -168,15 +189,19 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Range_with_lower_exclusive_uses_excluded_key() {
-        var json = ParadeDbJsonQuery.Range("Price", 10, 100, lowerInclusive: false, upperInclusive: true).ToJson();
+    public void Range_with_lower_exclusive_uses_excluded_key()
+    {
+        var json = ParadeDbJsonQuery
+            .Range("Price", 10, 100, lowerInclusive: false, upperInclusive: true)
+            .ToJson();
         var range = Parse(json).GetProperty("range");
         Assert.Equal(10, range.GetProperty("lower_bound").GetProperty("excluded").GetInt32());
         Assert.Equal(100, range.GetProperty("upper_bound").GetProperty("included").GetInt32());
     }
 
     [Fact]
-    public void Range_with_upper_bound_only_creates_correct_json() {
+    public void Range_with_upper_bound_only_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Range("Price", null, 100).ToJson();
         var range = Parse(json).GetProperty("range");
         Assert.Equal(JsonValueKind.Null, range.GetProperty("lower_bound").ValueKind);
@@ -184,19 +209,24 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Range_with_is_datetime_creates_correct_json() {
+    public void Range_with_is_datetime_creates_correct_json()
+    {
         var dt = new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc);
         var json = ParadeDbJsonQuery.Range("ReportingDate", dt, null, isDatetime: true).ToJson();
         var doc = Parse(json);
         var range = doc.GetProperty("range");
         Assert.True(range.GetProperty("is_datetime").GetBoolean());
-        Assert.Equal("2025-01-15T00:00:00Z", range.GetProperty("lower_bound").GetProperty("included").GetString());
+        Assert.Equal(
+            "2025-01-15T00:00:00Z",
+            range.GetProperty("lower_bound").GetProperty("included").GetString()
+        );
     }
 
     // ── Boost ────────────────────────────────────────────────────────
 
     [Fact]
-    public void Boost_wraps_inner_query_correctly() {
+    public void Boost_wraps_inner_query_correctly()
+    {
         var inner = ParadeDbJsonQuery.Parse("shoes");
         var json = ParadeDbJsonQuery.Boost(inner, 2.5).ToJson();
         var doc = Parse(json);
@@ -208,7 +238,8 @@ public class ParadeDbJsonQueryTests {
     // ── Const Score ──────────────────────────────────────────────────
 
     [Fact]
-    public void ConstScore_wraps_inner_query_correctly() {
+    public void ConstScore_wraps_inner_query_correctly()
+    {
         var inner = ParadeDbJsonQuery.Parse("shoes");
         var json = ParadeDbJsonQuery.ConstScore(inner, 1.0).ToJson();
         var doc = Parse(json);
@@ -220,7 +251,8 @@ public class ParadeDbJsonQueryTests {
     // ── Exists ───────────────────────────────────────────────────────
 
     [Fact]
-    public void Exists_creates_correct_json() {
+    public void Exists_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Exists("Content").ToJson();
         var doc = Parse(json);
         Assert.Equal("Content", doc.GetProperty("exists").GetProperty("field").GetString());
@@ -229,7 +261,8 @@ public class ParadeDbJsonQueryTests {
     // ── All ──────────────────────────────────────────────────────────
 
     [Fact]
-    public void All_creates_correct_json() {
+    public void All_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.All().ToJson();
         var doc = Parse(json);
         Assert.Equal(JsonValueKind.Null, doc.GetProperty("all").ValueKind);
@@ -238,10 +271,14 @@ public class ParadeDbJsonQueryTests {
     // ── Disjunction Max ──────────────────────────────────────────────
 
     [Fact]
-    public void DisjunctionMax_creates_correct_json() {
-        var json = ParadeDbJsonQuery.DisjunctionMax(
-            ParadeDbJsonQuery.Parse("shoes"),
-            ParadeDbJsonQuery.Match("boots", "Content")).ToJson();
+    public void DisjunctionMax_creates_correct_json()
+    {
+        var json = ParadeDbJsonQuery
+            .DisjunctionMax(
+                ParadeDbJsonQuery.Parse("shoes"),
+                ParadeDbJsonQuery.Match("boots", "Content")
+            )
+            .ToJson();
         var doc = Parse(json);
         var dm = doc.GetProperty("disjunction_max");
         Assert.Equal(2, dm.GetProperty("disjuncts").GetArrayLength());
@@ -250,7 +287,8 @@ public class ParadeDbJsonQueryTests {
     // ── More Like This ───────────────────────────────────────────────
 
     [Fact]
-    public void MoreLikeThis_creates_correct_json() {
+    public void MoreLikeThis_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.MoreLikeThis(42).ToJson();
         var doc = Parse(json);
         Assert.Equal(42, doc.GetProperty("more_like_this").GetProperty("key_value").GetInt32());
@@ -259,9 +297,11 @@ public class ParadeDbJsonQueryTests {
     // ── Boolean ──────────────────────────────────────────────────────
 
     [Fact]
-    public void Boolean_must_creates_correct_json() {
-        var json = ParadeDbJsonQuery.Boolean(b => b
-            .Must(ParadeDbJsonQuery.Parse("shoes"))).ToJson();
+    public void Boolean_must_creates_correct_json()
+    {
+        var json = ParadeDbJsonQuery
+            .Boolean(b => b.Must(ParadeDbJsonQuery.Parse("shoes")))
+            .ToJson();
         var doc = Parse(json);
         var boolean = doc.GetProperty("boolean");
         Assert.Equal(1, boolean.GetProperty("must").GetArrayLength());
@@ -270,27 +310,37 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Boolean_should_creates_correct_json() {
-        var json = ParadeDbJsonQuery.Boolean(b => b
-            .Should(ParadeDbJsonQuery.Parse("shoes"), ParadeDbJsonQuery.Parse("boots"))).ToJson();
+    public void Boolean_should_creates_correct_json()
+    {
+        var json = ParadeDbJsonQuery
+            .Boolean(b =>
+                b.Should(ParadeDbJsonQuery.Parse("shoes"), ParadeDbJsonQuery.Parse("boots"))
+            )
+            .ToJson();
         var doc = Parse(json);
         Assert.Equal(2, doc.GetProperty("boolean").GetProperty("should").GetArrayLength());
     }
 
     [Fact]
-    public void Boolean_must_not_creates_correct_json() {
-        var json = ParadeDbJsonQuery.Boolean(b => b
-            .MustNot(ParadeDbJsonQuery.Term("Status", "archived"))).ToJson();
+    public void Boolean_must_not_creates_correct_json()
+    {
+        var json = ParadeDbJsonQuery
+            .Boolean(b => b.MustNot(ParadeDbJsonQuery.Term("Status", "archived")))
+            .ToJson();
         var doc = Parse(json);
         Assert.Equal(1, doc.GetProperty("boolean").GetProperty("must_not").GetArrayLength());
     }
 
     [Fact]
-    public void Boolean_combined_creates_correct_json() {
-        var json = ParadeDbJsonQuery.Boolean(b => b
-            .Must(ParadeDbJsonQuery.Parse("revenue growth"))
-            .Should(ParadeDbJsonQuery.Term("DocumentType", 10))
-            .MustNot(ParadeDbJsonQuery.Term("Status", "archived"))).ToJson();
+    public void Boolean_combined_creates_correct_json()
+    {
+        var json = ParadeDbJsonQuery
+            .Boolean(b =>
+                b.Must(ParadeDbJsonQuery.Parse("revenue growth"))
+                    .Should(ParadeDbJsonQuery.Term("DocumentType", 10))
+                    .MustNot(ParadeDbJsonQuery.Term("Status", "archived"))
+            )
+            .ToJson();
         var doc = Parse(json);
         var boolean = doc.GetProperty("boolean");
         Assert.Equal(1, boolean.GetProperty("must").GetArrayLength());
@@ -299,14 +349,21 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Nested_boolean_creates_correct_json() {
-        var json = ParadeDbJsonQuery.Boolean(b => b
-            .Must(
-                ParadeDbJsonQuery.Parse("revenue growth"),
-                ParadeDbJsonQuery.Boolean(inner => inner
-                    .Should(
-                        ParadeDbJsonQuery.Term("DocumentType", 10),
-                        ParadeDbJsonQuery.Term("DocumentType", 20))))).ToJson();
+    public void Nested_boolean_creates_correct_json()
+    {
+        var json = ParadeDbJsonQuery
+            .Boolean(b =>
+                b.Must(
+                    ParadeDbJsonQuery.Parse("revenue growth"),
+                    ParadeDbJsonQuery.Boolean(inner =>
+                        inner.Should(
+                            ParadeDbJsonQuery.Term("DocumentType", 10),
+                            ParadeDbJsonQuery.Term("DocumentType", 20)
+                        )
+                    )
+                )
+            )
+            .ToJson();
         var doc = Parse(json);
         var must = doc.GetProperty("boolean").GetProperty("must");
         Assert.Equal(2, must.GetArrayLength());
@@ -317,7 +374,8 @@ public class ParadeDbJsonQueryTests {
     // ── ToString / ToJson parity ─────────────────────────────────────
 
     [Fact]
-    public void ToString_returns_same_string_as_ToJson() {
+    public void ToString_returns_same_string_as_ToJson()
+    {
         var query = ParadeDbJsonQuery.Parse("shoes");
         Assert.Equal(query.ToJson(), query.ToString());
     }
@@ -325,7 +383,8 @@ public class ParadeDbJsonQueryTests {
     // ── Match (field, value) — overload without options ──────────────
 
     [Fact]
-    public void Match_with_field_only_creates_correct_json() {
+    public void Match_with_field_only_creates_correct_json()
+    {
         var json = ParadeDbJsonQuery.Match("shoes", "Content").ToJson();
         var doc = Parse(json);
         var match = doc.GetProperty("match");
@@ -338,7 +397,8 @@ public class ParadeDbJsonQueryTests {
     // ── CreateJsonValue — remaining primitive switch arms ────────────
 
     [Fact]
-    public void Term_with_long_value_serializes_as_number() {
+    public void Term_with_long_value_serializes_as_number()
+    {
         var json = ParadeDbJsonQuery.Term("Big", 9_000_000_000L).ToJson();
         var value = Parse(json).GetProperty("term").GetProperty("value");
         Assert.Equal(JsonValueKind.Number, value.ValueKind);
@@ -346,7 +406,8 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Term_with_double_value_serializes_as_number() {
+    public void Term_with_double_value_serializes_as_number()
+    {
         var json = ParadeDbJsonQuery.Term("Score", 2.5d).ToJson();
         var value = Parse(json).GetProperty("term").GetProperty("value");
         Assert.Equal(JsonValueKind.Number, value.ValueKind);
@@ -354,7 +415,8 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Term_with_float_value_serializes_as_number() {
+    public void Term_with_float_value_serializes_as_number()
+    {
         var json = ParadeDbJsonQuery.Term("Score", 1.25f).ToJson();
         var value = Parse(json).GetProperty("term").GetProperty("value");
         Assert.Equal(JsonValueKind.Number, value.ValueKind);
@@ -362,14 +424,16 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Term_with_bool_value_serializes_as_boolean() {
+    public void Term_with_bool_value_serializes_as_boolean()
+    {
         var json = ParadeDbJsonQuery.Term("InStock", true).ToJson();
         var value = Parse(json).GetProperty("term").GetProperty("value");
         Assert.Equal(JsonValueKind.True, value.ValueKind);
     }
 
     [Fact]
-    public void Term_with_enum_value_serializes_as_underlying_int() {
+    public void Term_with_enum_value_serializes_as_underlying_int()
+    {
         var json = ParadeDbJsonQuery.Term("Record", Bm25Record.Position).ToJson();
         var value = Parse(json).GetProperty("term").GetProperty("value");
         Assert.Equal(JsonValueKind.Number, value.ValueKind);
@@ -377,7 +441,8 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Term_with_unsupported_type_falls_back_to_ToString() {
+    public void Term_with_unsupported_type_falls_back_to_ToString()
+    {
         // TimeSpan has a culture-invariant ToString — keeps the test stable across locales.
         var span = new TimeSpan(1, 2, 3);
         var json = ParadeDbJsonQuery.Term("Duration", span).ToJson();
@@ -387,7 +452,8 @@ public class ParadeDbJsonQueryTests {
     }
 
     [Fact]
-    public void Term_with_non_utc_datetime_uses_round_trip_format() {
+    public void Term_with_non_utc_datetime_uses_round_trip_format()
+    {
         var local = new DateTime(2025, 1, 15, 12, 30, 0, DateTimeKind.Unspecified);
         var json = ParadeDbJsonQuery.Term("PublishedAt", local).ToJson();
         var value = Parse(json).GetProperty("term").GetProperty("value");

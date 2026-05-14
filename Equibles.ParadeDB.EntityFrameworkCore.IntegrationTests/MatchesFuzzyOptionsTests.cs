@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
 [Collection(nameof(ParadeDbCollection))]
-public class MatchesFuzzyOptionsTests(ParadeDbFixture fixture) {
+public class MatchesFuzzyOptionsTests(ParadeDbFixture fixture)
+{
     // Verifies the 5-arg MatchesFuzzy overload translates the transpositionCostOne flag
     // into pdb.fuzzy(distance, prefix, transposition_cost_one) so an adjacent-character
     // swap counts as 1 edit (default: 2). "nueral" vs "neural" has Levenshtein distance 2
@@ -11,17 +12,32 @@ public class MatchesFuzzyOptionsTests(ParadeDbFixture fixture) {
     // that makes the match succeed. A regression that drops the extra args (or swaps them)
     // would flip both assertions.
     [Fact]
-    public async Task MatchesFuzzy_WithTranspositionCostOne_MatchesAdjacentSwapAtDistance1() {
+    public async Task MatchesFuzzy_WithTranspositionCostOne_MatchesAdjacentSwapAtDistance1()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var withTransposition = await ctx.Articles
-            .Where(a => EF.Functions.MatchesFuzzy(a.Content, "nueral", 1,
-                prefix: false, transpositionCostOne: true))
+        var withTransposition = await ctx
+            .Articles.Where(a =>
+                EF.Functions.MatchesFuzzy(
+                    a.Content,
+                    "nueral",
+                    1,
+                    prefix: false,
+                    transpositionCostOne: true
+                )
+            )
             .Select(a => a.Title)
             .ToListAsync();
-        var withoutTransposition = await ctx.Articles
-            .Where(a => EF.Functions.MatchesFuzzy(a.Content, "nueral", 1,
-                prefix: false, transpositionCostOne: false))
+        var withoutTransposition = await ctx
+            .Articles.Where(a =>
+                EF.Functions.MatchesFuzzy(
+                    a.Content,
+                    "nueral",
+                    1,
+                    prefix: false,
+                    transpositionCostOne: false
+                )
+            )
             .Select(a => a.Title)
             .ToListAsync();
 

@@ -3,13 +3,15 @@ using Microsoft.EntityFrameworkCore;
 namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
 [Collection(nameof(ParadeDbCollection))]
-public class AdvancedQueryTests(ParadeDbFixture fixture) {
+public class AdvancedQueryTests(ParadeDbFixture fixture)
+{
     [Fact]
-    public async Task Parse_TantivySyntax_FiltersByField() {
+    public async Task Parse_TantivySyntax_FiltersByField()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var results = await ctx.Articles
-            .Where(a => EF.Functions.Parse(a.Id, "title:transformer"))
+        var results = await ctx
+            .Articles.Where(a => EF.Functions.Parse(a.Id, "title:transformer"))
             .Select(a => a.Title)
             .ToListAsync();
 
@@ -18,13 +20,16 @@ public class AdvancedQueryTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task MoreLikeThis_ExecutesAndReturnsRelatedArticle() {
+    public async Task MoreLikeThis_ExecutesAndReturnsRelatedArticle()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var seed = await ctx.Articles.SingleAsync(a => a.Title == "Introduction to neural networks");
+        var seed = await ctx.Articles.SingleAsync(a =>
+            a.Title == "Introduction to neural networks"
+        );
 
-        var related = await ctx.Articles
-            .Where(a => EF.Functions.MoreLikeThis(a.Id, seed.Id))
+        var related = await ctx
+            .Articles.Where(a => EF.Functions.MoreLikeThis(a.Id, seed.Id))
             .Select(a => a.Title)
             .ToListAsync();
 
@@ -35,15 +40,19 @@ public class AdvancedQueryTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task JsonSearch_BooleanQuery_CombinesParseAndTerm() {
+    public async Task JsonSearch_BooleanQuery_CombinesParseAndTerm()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var query = ParadeDbJsonQuery.Boolean(b => b.Must(
-            ParadeDbJsonQuery.Parse("neural"),
-            ParadeDbJsonQuery.Term("category", "machine-learning")));
+        var query = ParadeDbJsonQuery.Boolean(b =>
+            b.Must(
+                ParadeDbJsonQuery.Parse("neural"),
+                ParadeDbJsonQuery.Term("category", "machine-learning")
+            )
+        );
 
-        var results = await ctx.Articles
-            .JsonSearch(a => a.Id, query)
+        var results = await ctx
+            .Articles.JsonSearch(a => a.Id, query)
             .Select(a => a.Title)
             .ToListAsync();
 

@@ -4,9 +4,11 @@ using Npgsql;
 namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
 [Collection(nameof(ParadeDbCollection))]
-public class IndexConfigurationTests(ParadeDbFixture fixture) {
+public class IndexConfigurationTests(ParadeDbFixture fixture)
+{
     [Fact]
-    public async Task PgSearchExtension_IsInstalled() {
+    public async Task PgSearchExtension_IsInstalled()
+    {
         await using var conn = new NpgsqlConnection(fixture.ConnectionString);
         await conn.OpenAsync();
         await using var cmd = conn.CreateCommand();
@@ -18,7 +20,8 @@ public class IndexConfigurationTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task Bm25Index_IsCreatedWithStorageParameters() {
+    public async Task Bm25Index_IsCreatedWithStorageParameters()
+    {
         await using var conn = new NpgsqlConnection(fixture.ConnectionString);
         await conn.OpenAsync();
         await using var cmd = conn.CreateCommand();
@@ -37,11 +40,12 @@ public class IndexConfigurationTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task EnglishStemmer_MatchesWordVariants() {
+    public async Task EnglishStemmer_MatchesWordVariants()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var hits = await ctx.Articles
-            .Where(a => EF.Functions.Matches(a.Content, "run"))
+        var hits = await ctx
+            .Articles.Where(a => EF.Functions.Matches(a.Content, "run"))
             .Select(a => a.Title)
             .ToListAsync();
 
@@ -50,14 +54,15 @@ public class IndexConfigurationTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task RawTokenizer_KeepsExactCategoryValue() {
+    public async Task RawTokenizer_KeepsExactCategoryValue()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var exactHits = await ctx.Articles
-            .Where(a => EF.Functions.MatchesTerm(a.Category, "machine-learning"))
+        var exactHits = await ctx
+            .Articles.Where(a => EF.Functions.MatchesTerm(a.Category, "machine-learning"))
             .CountAsync();
-        var tokenizedAttempt = await ctx.Articles
-            .Where(a => EF.Functions.MatchesTerm(a.Category, "machine"))
+        var tokenizedAttempt = await ctx
+            .Articles.Where(a => EF.Functions.MatchesTerm(a.Category, "machine"))
             .CountAsync();
 
         Assert.Equal(2, exactHits);

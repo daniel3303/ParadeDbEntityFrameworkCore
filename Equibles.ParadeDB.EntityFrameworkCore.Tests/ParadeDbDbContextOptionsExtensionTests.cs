@@ -8,8 +8,10 @@ namespace Equibles.ParadeDB.EntityFrameworkCore.Tests;
 /// invoked by EF Core when describing the active provider/plugins; the LINQ tests don't
 /// touch all of them so we exercise them explicitly here.
 /// </summary>
-public class ParadeDbDbContextOptionsExtensionTests {
-    private static DbContextOptionsExtensionInfo Info() {
+public class ParadeDbDbContextOptionsExtensionTests
+{
+    private static DbContextOptionsExtensionInfo Info()
+    {
         using var ctx = new TestDbContext();
         var ext = ctx.GetService<IDbContextOptions>()
             .FindExtension<ParadeDbDbContextOptionsExtension>()!;
@@ -17,29 +19,34 @@ public class ParadeDbDbContextOptionsExtensionTests {
     }
 
     [Fact]
-    public void IsDatabaseProvider_is_false() {
+    public void IsDatabaseProvider_is_false()
+    {
         Assert.False(Info().IsDatabaseProvider);
     }
 
     [Fact]
-    public void LogFragment_mentions_paradedb() {
+    public void LogFragment_mentions_paradedb()
+    {
         Assert.Contains("ParadeDB", Info().LogFragment, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public void GetServiceProviderHashCode_is_stable() {
+    public void GetServiceProviderHashCode_is_stable()
+    {
         var info = Info();
         Assert.Equal(info.GetServiceProviderHashCode(), info.GetServiceProviderHashCode());
     }
 
     [Fact]
-    public void ShouldUseSameServiceProvider_is_true_for_same_extension_info_type() {
+    public void ShouldUseSameServiceProvider_is_true_for_same_extension_info_type()
+    {
         var info = Info();
         Assert.True(info.ShouldUseSameServiceProvider(Info()));
     }
 
     [Fact]
-    public void PopulateDebugInfo_writes_paradedb_marker() {
+    public void PopulateDebugInfo_writes_paradedb_marker()
+    {
         var debug = new Dictionary<string, string>();
         Info().PopulateDebugInfo(debug);
         Assert.Equal("1", debug["ParadeDB:BM25"]);

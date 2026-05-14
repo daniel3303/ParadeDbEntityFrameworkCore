@@ -4,60 +4,113 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Equibles.ParadeDB.EntityFrameworkCore.Tests;
 
-public class ExpressionTests {
+public class ExpressionTests
+{
     private static SqlExpression Stub(string token) => new StubSqlExpression(token);
 
-    private sealed class StubSqlExpression : SqlExpression {
+    private sealed class StubSqlExpression : SqlExpression
+    {
         private readonly string _token;
-        public StubSqlExpression(string token) : base(typeof(string), new FakeTypeMapping()) {
+
+        public StubSqlExpression(string token)
+            : base(typeof(string), new FakeTypeMapping())
+        {
             _token = token;
         }
+
         protected override System.Linq.Expressions.Expression VisitChildren(
-            System.Linq.Expressions.ExpressionVisitor visitor) => this;
-        protected override void Print(ExpressionPrinter expressionPrinter) => expressionPrinter.Append(_token);
-        public override bool Equals(object? obj) => obj is StubSqlExpression other && other._token == _token;
+            System.Linq.Expressions.ExpressionVisitor visitor
+        ) => this;
+
+        protected override void Print(ExpressionPrinter expressionPrinter) =>
+            expressionPrinter.Append(_token);
+
+        public override bool Equals(object? obj) =>
+            obj is StubSqlExpression other && other._token == _token;
+
         public override int GetHashCode() => _token.GetHashCode();
+
 #if NET9_0_OR_GREATER
-        public override System.Linq.Expressions.Expression Quote() => throw new NotSupportedException();
+        public override System.Linq.Expressions.Expression Quote() =>
+            throw new NotSupportedException();
 #endif
     }
 
-    private sealed class FakeTypeMapping : RelationalTypeMapping {
-        public FakeTypeMapping() : base("text", typeof(string)) { }
-        protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters) => this;
+    private sealed class FakeTypeMapping : RelationalTypeMapping
+    {
+        public FakeTypeMapping()
+            : base("text", typeof(string)) { }
+
+        protected override RelationalTypeMapping Clone(
+            RelationalTypeMappingParameters parameters
+        ) => this;
     }
 
     [Fact]
-    public void ModifiedQueryExpression_Equals_ReturnsTrueForSameInnerAndSuffix() {
+    public void ModifiedQueryExpression_Equals_ReturnsTrueForSameInnerAndSuffix()
+    {
         var inner = Stub("hello");
-        var a = new ParadeDbModifiedQueryExpression(inner, "::pdb.fuzzy(2)", typeof(string), inner.TypeMapping);
-        var b = new ParadeDbModifiedQueryExpression(inner, "::pdb.fuzzy(2)", typeof(string), inner.TypeMapping);
+        var a = new ParadeDbModifiedQueryExpression(
+            inner,
+            "::pdb.fuzzy(2)",
+            typeof(string),
+            inner.TypeMapping
+        );
+        var b = new ParadeDbModifiedQueryExpression(
+            inner,
+            "::pdb.fuzzy(2)",
+            typeof(string),
+            inner.TypeMapping
+        );
 
         Assert.True(a.Equals(b));
         Assert.Equal(a.GetHashCode(), b.GetHashCode());
     }
 
     [Fact]
-    public void ModifiedQueryExpression_Equals_ReturnsFalseForDifferentSuffix() {
+    public void ModifiedQueryExpression_Equals_ReturnsFalseForDifferentSuffix()
+    {
         var inner = Stub("hello");
-        var a = new ParadeDbModifiedQueryExpression(inner, "::pdb.fuzzy(2)", typeof(string), inner.TypeMapping);
-        var b = new ParadeDbModifiedQueryExpression(inner, "::pdb.boost(2)", typeof(string), inner.TypeMapping);
+        var a = new ParadeDbModifiedQueryExpression(
+            inner,
+            "::pdb.fuzzy(2)",
+            typeof(string),
+            inner.TypeMapping
+        );
+        var b = new ParadeDbModifiedQueryExpression(
+            inner,
+            "::pdb.boost(2)",
+            typeof(string),
+            inner.TypeMapping
+        );
 
         Assert.False(a.Equals(b));
     }
 
     [Fact]
-    public void ModifiedQueryExpression_Equals_ReturnsFalseForUnrelatedType() {
+    public void ModifiedQueryExpression_Equals_ReturnsFalseForUnrelatedType()
+    {
         var inner = Stub("hello");
-        var a = new ParadeDbModifiedQueryExpression(inner, "::pdb.fuzzy(2)", typeof(string), inner.TypeMapping);
+        var a = new ParadeDbModifiedQueryExpression(
+            inner,
+            "::pdb.fuzzy(2)",
+            typeof(string),
+            inner.TypeMapping
+        );
 
         Assert.False(a.Equals("not an expression"));
     }
 
     [Fact]
-    public void ModifiedQueryExpression_Print_EmitsInnerThenSuffix() {
+    public void ModifiedQueryExpression_Print_EmitsInnerThenSuffix()
+    {
         var inner = Stub("hello");
-        var expr = new ParadeDbModifiedQueryExpression(inner, "::pdb.fuzzy(2)", typeof(string), inner.TypeMapping);
+        var expr = new ParadeDbModifiedQueryExpression(
+            inner,
+            "::pdb.fuzzy(2)",
+            typeof(string),
+            inner.TypeMapping
+        );
 
         var printer = new ExpressionPrinter();
         printer.Visit(expr);
@@ -66,46 +119,87 @@ public class ExpressionTests {
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_Equals_ReturnsTrueForSameStructure() {
+    public void NamedArgFunctionExpression_Equals_ReturnsTrueForSameStructure()
+    {
         var arg = Stub("c");
         var named = Stub("<b>");
 
-        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [arg], [("start_tag", named)], typeof(string), arg.TypeMapping);
-        var b = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [arg], [("start_tag", named)], typeof(string), arg.TypeMapping);
+        var a = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [("start_tag", named)],
+            typeof(string),
+            arg.TypeMapping
+        );
+        var b = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [("start_tag", named)],
+            typeof(string),
+            arg.TypeMapping
+        );
 
         Assert.True(a.Equals(b));
         Assert.Equal(a.GetHashCode(), b.GetHashCode());
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentFunctionName() {
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentFunctionName()
+    {
         var arg = Stub("c");
-        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg], [], typeof(string), arg.TypeMapping);
-        var b = new ParadeDbNamedArgFunctionExpression("pdb.snippets", [arg], [], typeof(string), arg.TypeMapping);
+        var a = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [],
+            typeof(string),
+            arg.TypeMapping
+        );
+        var b = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippets",
+            [arg],
+            [],
+            typeof(string),
+            arg.TypeMapping
+        );
 
         Assert.False(a.Equals(b));
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentNamedArgName() {
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentNamedArgName()
+    {
         var arg = Stub("c");
         var v1 = Stub("<b>");
-        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [arg], [("start_tag", v1)], typeof(string), arg.TypeMapping);
-        var b = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [arg], [("end_tag", v1)], typeof(string), arg.TypeMapping);
+        var a = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [("start_tag", v1)],
+            typeof(string),
+            arg.TypeMapping
+        );
+        var b = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [("end_tag", v1)],
+            typeof(string),
+            arg.TypeMapping
+        );
 
         Assert.False(a.Equals(b));
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_Print_EmitsPositionalAndNamedArgs() {
+    public void NamedArgFunctionExpression_Print_EmitsPositionalAndNamedArgs()
+    {
         var positional = Stub("c");
         var named = Stub("<b>");
-        var expr = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [positional], [("start_tag", named)], typeof(string), positional.TypeMapping);
+        var expr = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [positional],
+            [("start_tag", named)],
+            typeof(string),
+            positional.TypeMapping
+        );
 
         var printer = new ExpressionPrinter();
         printer.Visit(expr);
@@ -118,17 +212,30 @@ public class ExpressionTests {
 
 #if NET9_0_OR_GREATER
     [Fact]
-    public void ModifiedQueryExpression_Quote_Throws() {
+    public void ModifiedQueryExpression_Quote_Throws()
+    {
         var inner = Stub("hello");
-        var expr = new ParadeDbModifiedQueryExpression(inner, "::pdb.fuzzy(2)", typeof(string), inner.TypeMapping);
+        var expr = new ParadeDbModifiedQueryExpression(
+            inner,
+            "::pdb.fuzzy(2)",
+            typeof(string),
+            inner.TypeMapping
+        );
 
         Assert.Throws<NotSupportedException>(() => expr.Quote());
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_Quote_Throws() {
+    public void NamedArgFunctionExpression_Quote_Throws()
+    {
         var arg = Stub("c");
-        var expr = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg], [], typeof(string), arg.TypeMapping);
+        var expr = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [],
+            typeof(string),
+            arg.TypeMapping
+        );
 
         Assert.Throws<NotSupportedException>(() => expr.Quote());
     }
@@ -141,29 +248,43 @@ public class ExpressionTests {
     /// expression-tree visitation. Lets us assert that VisitChildren returns a NEW
     /// expression when a child changes (the "something changed" branch).
     /// </summary>
-    private sealed class ReplaceVisitor : System.Linq.Expressions.ExpressionVisitor {
+    private sealed class ReplaceVisitor : System.Linq.Expressions.ExpressionVisitor
+    {
         public System.Linq.Expressions.Expression Target { get; }
         public System.Linq.Expressions.Expression Replacement { get; }
 
-        public ReplaceVisitor(System.Linq.Expressions.Expression target,
-            System.Linq.Expressions.Expression replacement) {
+        public ReplaceVisitor(
+            System.Linq.Expressions.Expression target,
+            System.Linq.Expressions.Expression replacement
+        )
+        {
             Target = target;
             Replacement = replacement;
         }
 
-        public override System.Linq.Expressions.Expression Visit(System.Linq.Expressions.Expression? node) {
-            if (node is not null && ReferenceEquals(node, Target)) return Replacement;
+        public override System.Linq.Expressions.Expression Visit(
+            System.Linq.Expressions.Expression? node
+        )
+        {
+            if (node is not null && ReferenceEquals(node, Target))
+                return Replacement;
             return base.Visit(node)!;
         }
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_VisitChildren_returns_new_when_positional_changes() {
+    public void NamedArgFunctionExpression_VisitChildren_returns_new_when_positional_changes()
+    {
         var original = Stub("c");
         var replacement = Stub("c2");
         var named = Stub("<b>");
-        var expr = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [original], [("start_tag", named)], typeof(string), original.TypeMapping);
+        var expr = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [original],
+            [("start_tag", named)],
+            typeof(string),
+            original.TypeMapping
+        );
 
         var visitor = new ReplaceVisitor(original, replacement);
         var result = visitor.Visit(expr);
@@ -175,12 +296,18 @@ public class ExpressionTests {
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_VisitChildren_returns_new_when_named_changes() {
+    public void NamedArgFunctionExpression_VisitChildren_returns_new_when_named_changes()
+    {
         var positional = Stub("c");
         var original = Stub("<b>");
         var replacement = Stub("<i>");
-        var expr = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [positional], [("start_tag", original)], typeof(string), positional.TypeMapping);
+        var expr = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [positional],
+            [("start_tag", original)],
+            typeof(string),
+            positional.TypeMapping
+        );
 
         var visitor = new ReplaceVisitor(original, replacement);
         var result = visitor.Visit(expr);
@@ -192,11 +319,17 @@ public class ExpressionTests {
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_VisitChildren_returns_same_when_no_changes() {
+    public void NamedArgFunctionExpression_VisitChildren_returns_same_when_no_changes()
+    {
         var arg = Stub("c");
         var named = Stub("<b>");
-        var expr = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [arg], [("start_tag", named)], typeof(string), arg.TypeMapping);
+        var expr = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [("start_tag", named)],
+            typeof(string),
+            arg.TypeMapping
+        );
 
         var visitor = new ReplaceVisitor(Stub("nothing-matches-this"), Stub("unused"));
         var result = visitor.Visit(expr);
@@ -205,9 +338,15 @@ public class ExpressionTests {
     }
 
     [Fact]
-    public void ModifiedQueryExpression_Print_DelegatesToInner() {
+    public void ModifiedQueryExpression_Print_DelegatesToInner()
+    {
         var inner = Stub("hello");
-        var expr = new ParadeDbModifiedQueryExpression(inner, "::pdb.fuzzy(2)", typeof(string), inner.TypeMapping);
+        var expr = new ParadeDbModifiedQueryExpression(
+            inner,
+            "::pdb.fuzzy(2)",
+            typeof(string),
+            inner.TypeMapping
+        );
 
         var printer = new ExpressionPrinter();
         printer.Visit(expr);
@@ -218,10 +357,16 @@ public class ExpressionTests {
     }
 
     [Fact]
-    public void ModifiedQueryExpression_VisitChildren_returns_new_when_inner_changes() {
+    public void ModifiedQueryExpression_VisitChildren_returns_new_when_inner_changes()
+    {
         var original = Stub("hello");
         var replacement = Stub("world");
-        var expr = new ParadeDbModifiedQueryExpression(original, "::pdb.boost(2)", typeof(string), original.TypeMapping);
+        var expr = new ParadeDbModifiedQueryExpression(
+            original,
+            "::pdb.boost(2)",
+            typeof(string),
+            original.TypeMapping
+        );
 
         var visitor = new ReplaceVisitor(original, replacement);
         var result = visitor.Visit(expr);
@@ -233,9 +378,15 @@ public class ExpressionTests {
     }
 
     [Fact]
-    public void ModifiedQueryExpression_VisitChildren_returns_same_when_inner_unchanged() {
+    public void ModifiedQueryExpression_VisitChildren_returns_same_when_inner_unchanged()
+    {
         var inner = Stub("hello");
-        var expr = new ParadeDbModifiedQueryExpression(inner, "::pdb.boost(2)", typeof(string), inner.TypeMapping);
+        var expr = new ParadeDbModifiedQueryExpression(
+            inner,
+            "::pdb.boost(2)",
+            typeof(string),
+            inner.TypeMapping
+        );
 
         var visitor = new ReplaceVisitor(Stub("nothing-matches-this"), Stub("unused"));
         var result = visitor.Visit(expr);
@@ -246,64 +397,125 @@ public class ExpressionTests {
     // ── NamedArgFunctionExpression.Equals — remaining branch arms ──────
 
     [Fact]
-    public void NamedArgFunctionExpression_Equals_ReturnsFalseForUnrelatedType() {
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForUnrelatedType()
+    {
         var arg = Stub("c");
-        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg], [], typeof(string), arg.TypeMapping);
+        var a = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [],
+            typeof(string),
+            arg.TypeMapping
+        );
 
         Assert.False(a.Equals("not an expression"));
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentPositionalCount() {
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentPositionalCount()
+    {
         var arg1 = Stub("c");
         var arg2 = Stub("d");
-        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg1], [], typeof(string), arg1.TypeMapping);
-        var b = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg1, arg2], [], typeof(string), arg1.TypeMapping);
+        var a = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg1],
+            [],
+            typeof(string),
+            arg1.TypeMapping
+        );
+        var b = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg1, arg2],
+            [],
+            typeof(string),
+            arg1.TypeMapping
+        );
 
         Assert.False(a.Equals(b));
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentNamedCount() {
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentNamedCount()
+    {
         var arg = Stub("c");
         var v = Stub("<b>");
-        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [arg], [("start_tag", v)], typeof(string), arg.TypeMapping);
-        var b = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [arg], [("start_tag", v), ("end_tag", v)], typeof(string), arg.TypeMapping);
+        var a = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [("start_tag", v)],
+            typeof(string),
+            arg.TypeMapping
+        );
+        var b = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [("start_tag", v), ("end_tag", v)],
+            typeof(string),
+            arg.TypeMapping
+        );
 
         Assert.False(a.Equals(b));
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentPositionalValue() {
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentPositionalValue()
+    {
         var arg1 = Stub("c");
         var arg2 = Stub("d");
-        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg1], [], typeof(string), arg1.TypeMapping);
-        var b = new ParadeDbNamedArgFunctionExpression("pdb.snippet", [arg2], [], typeof(string), arg1.TypeMapping);
+        var a = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg1],
+            [],
+            typeof(string),
+            arg1.TypeMapping
+        );
+        var b = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg2],
+            [],
+            typeof(string),
+            arg1.TypeMapping
+        );
 
         Assert.False(a.Equals(b));
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentNamedValue() {
+    public void NamedArgFunctionExpression_Equals_ReturnsFalseForDifferentNamedValue()
+    {
         var arg = Stub("c");
         var v1 = Stub("<b>");
         var v2 = Stub("<i>");
-        var a = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [arg], [("start_tag", v1)], typeof(string), arg.TypeMapping);
-        var b = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [arg], [("start_tag", v2)], typeof(string), arg.TypeMapping);
+        var a = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [("start_tag", v1)],
+            typeof(string),
+            arg.TypeMapping
+        );
+        var b = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [arg],
+            [("start_tag", v2)],
+            typeof(string),
+            arg.TypeMapping
+        );
 
         Assert.False(a.Equals(b));
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_Print_emits_separator_between_multiple_positional_args() {
+    public void NamedArgFunctionExpression_Print_emits_separator_between_multiple_positional_args()
+    {
         var p1 = Stub("c");
         var p2 = Stub("d");
-        var expr = new ParadeDbNamedArgFunctionExpression("pdb.fn",
-            [p1, p2], [], typeof(string), p1.TypeMapping);
+        var expr = new ParadeDbNamedArgFunctionExpression(
+            "pdb.fn",
+            [p1, p2],
+            [],
+            typeof(string),
+            p1.TypeMapping
+        );
 
         var printer = new ExpressionPrinter();
         printer.Visit(expr);
@@ -314,11 +526,17 @@ public class ExpressionTests {
     }
 
     [Fact]
-    public void NamedArgFunctionExpression_Print_handles_named_args_without_positional() {
+    public void NamedArgFunctionExpression_Print_handles_named_args_without_positional()
+    {
         var v1 = Stub("<b>");
         var v2 = Stub("</b>");
-        var expr = new ParadeDbNamedArgFunctionExpression("pdb.fn",
-            [], [("start_tag", v1), ("end_tag", v2)], typeof(string), v1.TypeMapping);
+        var expr = new ParadeDbNamedArgFunctionExpression(
+            "pdb.fn",
+            [],
+            [("start_tag", v1), ("end_tag", v2)],
+            typeof(string),
+            v1.TypeMapping
+        );
 
         var printer = new ExpressionPrinter();
         printer.Visit(expr);
