@@ -102,6 +102,7 @@ dotnet ef database update
 ```
 
 EF Core will generate the migration automatically, creating:
+
 - The `pg_search` PostgreSQL extension
 - A BM25 index on the specified columns with the `key_field` storage parameter and per-column `text_fields` / `numeric_fields` / `boolean_fields` / `datetime_fields` / `json_fields` JSON derived from any `[Bm25Text]` / `[Bm25Numeric]` / etc. attributes
 
