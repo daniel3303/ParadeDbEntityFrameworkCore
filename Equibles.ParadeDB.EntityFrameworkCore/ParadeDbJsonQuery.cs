@@ -66,12 +66,6 @@ public sealed class ParadeDbJsonQuery {
     // ── Match ────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Match query. Produces: <c>{"match":{"value":"..."}}</c>.
-    /// </summary>
-    public static ParadeDbJsonQuery Match(string value) =>
-        new(new JsonObject { ["match"] = new JsonObject { ["value"] = value } });
-
-    /// <summary>
     /// Match query with field. Produces: <c>{"match":{"field":"...","value":"..."}}</c>.
     /// </summary>
     public static ParadeDbJsonQuery Match(string value, string field) =>
