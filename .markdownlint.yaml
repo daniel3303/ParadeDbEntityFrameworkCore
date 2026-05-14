@@ -1,0 +1,8 @@
+default: true
+
+# MD013 line-length — prose lines aren't worth wrapping at 80.
+MD013: false
+# MD024 duplicate headings — common in changelogs/READMEs with repeated section names.
+MD024: false
+# MD033 inline HTML — README uses <details>, <kbd>, etc.
+MD033: false
