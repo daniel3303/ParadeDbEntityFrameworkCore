@@ -36,9 +36,11 @@ public sealed class ParadeDbJsonQuery {
     /// Parse query with options. Produces: <c>{"parse":{"query_string":"...","lenient":true,"conjunction_mode":true}}</c>.
     /// </summary>
     public static ParadeDbJsonQuery Parse(string queryString, bool lenient, bool conjunctionMode) {
-        var inner = new JsonObject { ["query_string"] = queryString };
-        if (lenient) inner["lenient"] = true;
-        if (conjunctionMode) inner["conjunction_mode"] = true;
+        var inner = new JsonObject {
+            ["query_string"] = queryString,
+            ["lenient"] = lenient,
+            ["conjunction_mode"] = conjunctionMode
+        };
         return new(new JsonObject { ["parse"] = inner });
     }
 
@@ -79,8 +81,12 @@ public sealed class ParadeDbJsonQuery {
     /// Match query with field and options.
     /// </summary>
     public static ParadeDbJsonQuery Match(string value, string field, int distance, bool conjunctionMode) {
-        var inner = new JsonObject { ["field"] = field, ["value"] = value, ["distance"] = distance };
-        if (conjunctionMode) inner["conjunction_mode"] = true;
+        var inner = new JsonObject {
+            ["field"] = field,
+            ["value"] = value,
+            ["distance"] = distance,
+            ["conjunction_mode"] = conjunctionMode
+        };
         return new(new JsonObject { ["match"] = inner });
     }
 
@@ -96,9 +102,13 @@ public sealed class ParadeDbJsonQuery {
     /// Fuzzy term match with full options.
     /// </summary>
     public static ParadeDbJsonQuery FuzzyTerm(string field, string value, int distance, bool prefix, bool transpositionCostOne) {
-        var inner = new JsonObject { ["field"] = field, ["value"] = value, ["distance"] = distance };
-        if (prefix) inner["prefix"] = true;
-        if (transpositionCostOne) inner["transposition_cost_one"] = true;
+        var inner = new JsonObject {
+            ["field"] = field,
+            ["value"] = value,
+            ["distance"] = distance,
+            ["prefix"] = prefix,
+            ["transposition_cost_one"] = transpositionCostOne
+        };
         return new(new JsonObject { ["fuzzy_term"] = inner });
     }
 

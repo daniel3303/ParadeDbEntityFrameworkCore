@@ -10,7 +10,7 @@ public class JsonFuzzyTermOptionsTests(ParadeDbFixture fixture) {
     // the CLR MatchesTermFuzzy 5-arg path (pdb.fuzzy_term positional function).
     // A regression renaming "transposition_cost_one" (or hard-coding it) would
     // silently make distance=1 reject the adjacent-swap that the test relies on.
-    [Fact(Skip = "GH-47 — JSON FuzzyTerm transpositionCostOne=false is indistinguishable from true")]
+    [Fact]
     public async Task FuzzyTerm_WithTranspositionCostOne_MatchesAdjacentSwapAtDistance1() {
         await using var ctx = fixture.CreateDbContext();
 
