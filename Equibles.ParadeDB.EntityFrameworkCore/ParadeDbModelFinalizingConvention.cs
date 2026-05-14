@@ -109,11 +109,8 @@ public sealed class ParadeDbModelFinalizingConvention : IModelFinalizingConventi
         var datetimeFields = new JsonObject();
         var jsonFields = new JsonObject();
 
-        foreach (var propertyName in attribute.Columns)
+        foreach (var propertyName in attribute.Columns.Where(c => c != attribute.KeyField))
         {
-            if (propertyName == attribute.KeyField)
-                continue;
-
             var property = entityType.FindProperty(propertyName);
             var propertyInfo = property?.PropertyInfo;
             if (propertyInfo == null)
