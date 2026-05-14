@@ -97,8 +97,9 @@ public class ExpressionTests
             typeof(string),
             inner.TypeMapping
         );
+        object unrelated = "not an expression";
 
-        Assert.False(a.Equals("not an expression"));
+        Assert.False(a.Equals(unrelated));
     }
 
     [Fact]
@@ -407,8 +408,9 @@ public class ExpressionTests
             typeof(string),
             arg.TypeMapping
         );
+        object unrelated = "not an expression";
 
-        Assert.False(a.Equals("not an expression"));
+        Assert.False(a.Equals(unrelated));
     }
 
     [Fact]
