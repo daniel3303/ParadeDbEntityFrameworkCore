@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest a new feature or API
+title: "Feature: <one-line summary>"
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the use case. What can't you do today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API or behavior
+      description: |
+        Sketch the LINQ / attribute surface or the SQL shape you'd expect.
+        Concrete examples beat abstract descriptions.
+      render: csharp
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workarounds have you tried? Why aren't they sufficient?
+
+  - type: textarea
+    id: paradedb-link
+    attributes:
+      label: Upstream ParadeDB / pg_search docs
+      description: |
+        Link to the relevant pg_search query or SQL function this would expose.
+        Helps verify the feature is actually supported by ParadeDB.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
