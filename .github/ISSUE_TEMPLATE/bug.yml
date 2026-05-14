@@ -1,0 +1,94 @@
+name: Bug report
+description: Report a bug in the library
+title: "Bug: <one-line summary>"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill in the
+        sections below so the issue can be reproduced quickly.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong, in one or two sentences.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: |
+        The smallest LINQ snippet (and entity / DbContext setup) that triggers
+        the issue. Inline code blocks or a link to a minimal repro repo.
+      render: csharp
+    validations:
+      required: true
+
+  - type: textarea
+    id: generated-sql
+    attributes:
+      label: Generated SQL (if applicable)
+      description: |
+        Enable EF Core query logging (`LogTo(Console.WriteLine)` on the
+        `DbContextOptionsBuilder`) and paste the SQL that was emitted.
+      render: sql
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: Include the full exception type, message, and stack trace if any.
+    validations:
+      required: true
+
+  - type: input
+    id: library-version
+    attributes:
+      label: Library version
+      description: "`Equibles.ParadeDB.EntityFrameworkCore` NuGet version."
+      placeholder: e.g. 0.4.2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: dotnet
+    attributes:
+      label: .NET version
+      options:
+        - .NET 8
+        - .NET 9
+        - .NET 10
+    validations:
+      required: true
+
+  - type: input
+    id: npgsql-version
+    attributes:
+      label: Npgsql.EntityFrameworkCore.PostgreSQL version
+      placeholder: e.g. 10.0.1
+    validations:
+      required: true
+
+  - type: input
+    id: paradedb-version
+    attributes:
+      label: ParadeDB / pg_search version
+      description: The Docker image tag or pg_search extension version reported by `SELECT extversion FROM pg_extension WHERE extname = 'pg_search';`.
+      placeholder: e.g. paradedb/paradedb:latest, pg_search 0.18.4
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Anything else relevant — workarounds tried, related issues, links to upstream ParadeDB bugs.
