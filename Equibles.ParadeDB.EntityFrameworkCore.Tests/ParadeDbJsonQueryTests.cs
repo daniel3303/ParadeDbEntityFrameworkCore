@@ -72,13 +72,6 @@ public class ParadeDbJsonQueryTests {
     // ── Match ────────────────────────────────────────────────────────
 
     [Fact]
-    public void Match_creates_correct_json() {
-        var json = ParadeDbJsonQuery.Match("shoes").ToJson();
-        var doc = Parse(json);
-        Assert.Equal("shoes", doc.GetProperty("match").GetProperty("value").GetString());
-    }
-
-    [Fact]
     public void Match_with_field_and_options_creates_correct_json() {
         var json = ParadeDbJsonQuery.Match("shoes", "Content", 2, true).ToJson();
         var doc = Parse(json);
@@ -248,7 +241,7 @@ public class ParadeDbJsonQueryTests {
     public void DisjunctionMax_creates_correct_json() {
         var json = ParadeDbJsonQuery.DisjunctionMax(
             ParadeDbJsonQuery.Parse("shoes"),
-            ParadeDbJsonQuery.Match("boots")).ToJson();
+            ParadeDbJsonQuery.Match("boots", "Content")).ToJson();
         var doc = Parse(json);
         var dm = doc.GetProperty("disjunction_max");
         Assert.Equal(2, dm.GetProperty("disjuncts").GetArrayLength());
