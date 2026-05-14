@@ -1,0 +1,9 @@
+# Revisions listed here are skipped by `git blame` and the GitHub blame view.
+# Use for purely mechanical changes (formatting, mass renames) so authorship
+# survives.
+#
+# Enable locally with:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# One-time CSharpier format pass (PR #64).
+fa8e78714cf82f3c61fe3c7b025ba2ee6bc9674c
