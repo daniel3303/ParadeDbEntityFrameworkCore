@@ -5,7 +5,9 @@ namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
 public sealed class ParadeDbFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("paradedb/paradedb:latest")
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder(
+        "paradedb/paradedb:latest"
+    )
         .WithDatabase("paradedb_test")
         .WithUsername("postgres")
         .WithPassword("postgres")
