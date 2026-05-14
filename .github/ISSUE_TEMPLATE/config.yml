@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/daniel3303/ParadeDbEntityFrameworkCore/security/advisories/new
+    about: Use private vulnerability reporting — do not open a public issue.
+  - name: ParadeDB / pg_search question
+    url: https://github.com/paradedb/paradedb/discussions
+    about: Questions about ParadeDB itself (not this EF Core wrapper) are best asked upstream.
