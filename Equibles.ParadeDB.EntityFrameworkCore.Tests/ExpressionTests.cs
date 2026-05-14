@@ -15,7 +15,7 @@ public class ExpressionTests {
         protected override System.Linq.Expressions.Expression VisitChildren(
             System.Linq.Expressions.ExpressionVisitor visitor) => this;
         protected override void Print(ExpressionPrinter expressionPrinter) => expressionPrinter.Append(_token);
-        public override bool Equals(object obj) => obj is StubSqlExpression other && other._token == _token;
+        public override bool Equals(object? obj) => obj is StubSqlExpression other && other._token == _token;
         public override int GetHashCode() => _token.GetHashCode();
 #if NET9_0_OR_GREATER
         public override System.Linq.Expressions.Expression Quote() => throw new NotSupportedException();
