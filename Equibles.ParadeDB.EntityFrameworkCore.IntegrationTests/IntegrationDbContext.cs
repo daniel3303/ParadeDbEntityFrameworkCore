@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
-public sealed class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options) : DbContext(options) {
+public sealed class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options)
+    : DbContext(options)
+{
     public DbSet<Article> Articles => Set<Article>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<KeywordRecord> KeywordRecords => Set<KeywordRecord>();
@@ -16,7 +18,8 @@ public sealed class IntegrationDbContext(DbContextOptions<IntegrationDbContext> 
 
 [Table("articles")]
 [Bm25Index(nameof(Id), nameof(Title), nameof(Content), nameof(Category), nameof(Rating))]
-public sealed class Article {
+public sealed class Article
+{
     [Column("id")]
     public int Id { get; set; }
 
@@ -39,7 +42,8 @@ public sealed class Article {
 
 [Table("products")]
 [Bm25Index(nameof(Id), nameof(Name), nameof(InStock), nameof(ReleasedAt), nameof(Specs))]
-public sealed class Product {
+public sealed class Product
+{
     [Column("id")]
     public int Id { get; set; }
 
@@ -62,7 +66,8 @@ public sealed class Product {
 
 [Table("keyword_records")]
 [Bm25Index(nameof(Id), nameof(Code))]
-public sealed class KeywordRecord {
+public sealed class KeywordRecord
+{
     [Column("id")]
     public int Id { get; set; }
 
@@ -73,7 +78,8 @@ public sealed class KeywordRecord {
 
 [Table("ngram_records")]
 [Bm25Index(nameof(Id), nameof(Body))]
-public sealed class NgramRecord {
+public sealed class NgramRecord
+{
     [Column("id")]
     public int Id { get; set; }
 
@@ -84,7 +90,8 @@ public sealed class NgramRecord {
 
 [Table("icu_records")]
 [Bm25Index(nameof(Id), nameof(Body))]
-public sealed class IcuRecord {
+public sealed class IcuRecord
+{
     [Column("id")]
     public int Id { get; set; }
 
@@ -95,7 +102,8 @@ public sealed class IcuRecord {
 
 [Table("source_code_records")]
 [Bm25Index(nameof(Id), nameof(Snippet))]
-public sealed class SourceCodeRecord {
+public sealed class SourceCodeRecord
+{
     [Column("id")]
     public int Id { get; set; }
 
@@ -106,7 +114,8 @@ public sealed class SourceCodeRecord {
 
 [Table("regex_records")]
 [Bm25Index(nameof(Id), nameof(Body))]
-public sealed class RegexRecord {
+public sealed class RegexRecord
+{
     [Column("id")]
     public int Id { get; set; }
 
@@ -117,7 +126,8 @@ public sealed class RegexRecord {
 
 [Table("german_articles")]
 [Bm25Index(nameof(Id), nameof(Content))]
-public sealed class GermanArticle {
+public sealed class GermanArticle
+{
     [Column("id")]
     public int Id { get; set; }
 

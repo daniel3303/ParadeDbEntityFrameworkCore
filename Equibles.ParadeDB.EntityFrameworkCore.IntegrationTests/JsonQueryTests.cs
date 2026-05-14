@@ -3,16 +3,23 @@ using Microsoft.EntityFrameworkCore;
 namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
 [Collection(nameof(ParadeDbCollection))]
-public class JsonQueryTests(ParadeDbFixture fixture) {
+public class JsonQueryTests(ParadeDbFixture fixture)
+{
     [Fact]
-    public async Task JsonSearch_NumericRange_FiltersByRating() {
+    public async Task JsonSearch_NumericRange_FiltersByRating()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var query = ParadeDbJsonQuery.Range("rating", lowerBound: 4, upperBound: 5,
-            lowerInclusive: true, upperInclusive: true);
+        var query = ParadeDbJsonQuery.Range(
+            "rating",
+            lowerBound: 4,
+            upperBound: 5,
+            lowerInclusive: true,
+            upperInclusive: true
+        );
 
-        var hits = await ctx.Articles
-            .JsonSearch(a => a.Id, query)
+        var hits = await ctx
+            .Articles.JsonSearch(a => a.Id, query)
             .Select(a => a.Title)
             .ToListAsync();
 
@@ -21,15 +28,19 @@ public class JsonQueryTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task JsonSearch_Should_OrSemantics() {
+    public async Task JsonSearch_Should_OrSemantics()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var query = ParadeDbJsonQuery.Boolean(b => b.Should(
-            ParadeDbJsonQuery.Term("category", "cooking"),
-            ParadeDbJsonQuery.Term("category", "physics")));
+        var query = ParadeDbJsonQuery.Boolean(b =>
+            b.Should(
+                ParadeDbJsonQuery.Term("category", "cooking"),
+                ParadeDbJsonQuery.Term("category", "physics")
+            )
+        );
 
-        var hits = await ctx.Articles
-            .JsonSearch(a => a.Id, query)
+        var hits = await ctx
+            .Articles.JsonSearch(a => a.Id, query)
             .Select(a => a.Title)
             .ToListAsync();
 
@@ -39,15 +50,16 @@ public class JsonQueryTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task JsonSearch_MustNot_ExcludesMatchingDocs() {
+    public async Task JsonSearch_MustNot_ExcludesMatchingDocs()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var query = ParadeDbJsonQuery.Boolean(b => b
-            .Must(ParadeDbJsonQuery.All())
-            .MustNot(ParadeDbJsonQuery.Term("category", "cooking")));
+        var query = ParadeDbJsonQuery.Boolean(b =>
+            b.Must(ParadeDbJsonQuery.All()).MustNot(ParadeDbJsonQuery.Term("category", "cooking"))
+        );
 
-        var hits = await ctx.Articles
-            .JsonSearch(a => a.Id, query)
+        var hits = await ctx
+            .Articles.JsonSearch(a => a.Id, query)
             .Select(a => a.Title)
             .ToListAsync();
 
@@ -56,14 +68,19 @@ public class JsonQueryTests(ParadeDbFixture fixture) {
     }
 
     [Fact]
-    public async Task JsonSearch_InlineBuilder_OverloadWorks() {
+    public async Task JsonSearch_InlineBuilder_OverloadWorks()
+    {
         await using var ctx = fixture.CreateDbContext();
 
-        var hits = await ctx.Articles
-            .JsonSearch(a => a.Id, b => b
-                .Must(
-                    ParadeDbJsonQuery.Parse("neural"),
-                    ParadeDbJsonQuery.Term("category", "machine-learning")))
+        var hits = await ctx
+            .Articles.JsonSearch(
+                a => a.Id,
+                b =>
+                    b.Must(
+                        ParadeDbJsonQuery.Parse("neural"),
+                        ParadeDbJsonQuery.Term("category", "machine-learning")
+                    )
+            )
             .Select(a => a.Title)
             .ToListAsync();
 

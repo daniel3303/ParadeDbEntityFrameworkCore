@@ -3,20 +3,22 @@ using Microsoft.EntityFrameworkCore;
 namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
 [Collection(nameof(ParadeDbCollection))]
-public class JsonPhrasePrefixTests(ParadeDbFixture fixture) {
+public class JsonPhrasePrefixTests(ParadeDbFixture fixture)
+{
     // Verifies ParadeDbJsonQuery.PhrasePrefix builds {"phrase_prefix":{"field":"...","phrases":[...]}}
     // — the last phrase element is treated as a prefix (useful for autocomplete). The CLR
     // PhrasePrefix translates via pdb.phrase_prefix(ARRAY[...]); this JSON form goes through
     // the @@@ jsonb path. A regression in the phrases array or field key would either fail
     // to match or change the match set entirely.
     [Fact]
-    public async Task PhrasePrefix_LastTermAsPrefix_MatchesContainingDocument() {
+    public async Task PhrasePrefix_LastTermAsPrefix_MatchesContainingDocument()
+    {
         await using var ctx = fixture.CreateDbContext();
 
         var query = ParadeDbJsonQuery.PhrasePrefix("content", "neural", "net");
 
-        var hits = await ctx.Articles
-            .JsonSearch(a => a.Id, query)
+        var hits = await ctx
+            .Articles.JsonSearch(a => a.Id, query)
             .Select(a => a.Title)
             .ToListAsync();
 

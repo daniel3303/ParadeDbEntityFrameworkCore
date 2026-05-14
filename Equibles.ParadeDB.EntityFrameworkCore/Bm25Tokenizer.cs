@@ -5,7 +5,8 @@ namespace Equibles.ParadeDB.EntityFrameworkCore;
 /// Names map to pg_search tokenizer type strings.
 /// <see cref="Unspecified"/> means the property carries no tokenizer setting; pg_search uses its default.
 /// </summary>
-public enum Bm25Tokenizer {
+public enum Bm25Tokenizer
+{
     Unspecified = 0,
     Default,
     Whitespace,

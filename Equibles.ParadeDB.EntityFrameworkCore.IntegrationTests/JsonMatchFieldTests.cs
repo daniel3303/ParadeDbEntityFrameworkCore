@@ -3,14 +3,16 @@ using Microsoft.EntityFrameworkCore;
 namespace Equibles.ParadeDB.EntityFrameworkCore.IntegrationTests;
 
 [Collection(nameof(ParadeDbCollection))]
-public class JsonMatchFieldTests(ParadeDbFixture fixture) {
+public class JsonMatchFieldTests(ParadeDbFixture fixture)
+{
     // Verifies the 2-arg ParadeDbJsonQuery.Match(value, field) overload restricts
     // the match to the named field. The C# parameter order (value, field) is the
     // opposite of the resulting JSON key order ({"field":..., "value":...}); a
     // refactor that "aligns" param order with the JSON would silently invert
     // every caller. The 4-arg overload is the only currently-tested Match shape.
     [Fact]
-    public async Task Match_WithFieldAndValue_RestrictsToNamedField() {
+    public async Task Match_WithFieldAndValue_RestrictsToNamedField()
+    {
         await using var ctx = fixture.CreateDbContext();
 
         // "models" appears in Article 1 and Article 2 content (stems to "model"),
@@ -19,12 +21,12 @@ public class JsonMatchFieldTests(ParadeDbFixture fixture) {
         var titleQuery = ParadeDbJsonQuery.Match("models", "title");
         var contentQuery = ParadeDbJsonQuery.Match("models", "content");
 
-        var titleHits = await ctx.Articles
-            .JsonSearch(a => a.Id, titleQuery)
+        var titleHits = await ctx
+            .Articles.JsonSearch(a => a.Id, titleQuery)
             .Select(a => a.Title)
             .ToListAsync();
-        var contentHits = await ctx.Articles
-            .JsonSearch(a => a.Id, contentQuery)
+        var contentHits = await ctx
+            .Articles.JsonSearch(a => a.Id, contentQuery)
             .Select(a => a.Title)
             .ToListAsync();
 

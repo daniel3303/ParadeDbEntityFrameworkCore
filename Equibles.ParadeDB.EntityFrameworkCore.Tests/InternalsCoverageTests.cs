@@ -15,8 +15,10 @@ namespace Equibles.ParadeDB.EntityFrameworkCore.Tests;
 ///   - <see cref="ParadeDbSqlNullabilityProcessor.VisitCustomSqlExpression"/> rebuild path
 ///     (children change during processing).
 /// </summary>
-public class InternalsCoverageTests {
-    private static IServiceProvider Services() {
+public class InternalsCoverageTests
+{
+    private static IServiceProvider Services()
+    {
         var ctx = new TestDbContext();
         return ((IInfrastructure<IServiceProvider>)ctx).Instance;
     }
@@ -24,11 +26,15 @@ public class InternalsCoverageTests {
     // ── Translator fall-through ───────────────────────────────────────
 
     [Fact]
-    public void Translate_returns_null_for_unknown_method() {
+    public void Translate_returns_null_for_unknown_method()
+    {
         var services = Services();
         var plugins = services.GetService<IEnumerable<IMethodCallTranslatorPlugin>>()!;
-        var translator = plugins.OfType<ParadeDbMethodCallTranslatorPlugin>().Single()
-            .Translators.OfType<ParadeDbMethodCallTranslator>().Single();
+        var translator = plugins
+            .OfType<ParadeDbMethodCallTranslatorPlugin>()
+            .Single()
+            .Translators.OfType<ParadeDbMethodCallTranslator>()
+            .Single();
 
         var unknown = typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string)])!;
         var sql = services.GetService<ISqlExpressionFactory>()!;
@@ -45,12 +51,15 @@ public class InternalsCoverageTests {
 
     // ── Nullability processor: child-pass-through path ────────────────
 
-    private static ParadeDbSqlNullabilityProcessor CreateProcessor() {
+    private static ParadeDbSqlNullabilityProcessor CreateProcessor()
+    {
         var services = Services();
         var factory = (ParadeDbParameterBasedSqlProcessorFactory)
             services.GetService<IRelationalParameterBasedSqlProcessorFactory>()!;
-        var depsField = typeof(ParadeDbParameterBasedSqlProcessorFactory)
-            .GetField("_dependencies", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var depsField = typeof(ParadeDbParameterBasedSqlProcessorFactory).GetField(
+            "_dependencies",
+            BindingFlags.NonPublic | BindingFlags.Instance
+        )!;
         var deps = (RelationalParameterBasedSqlProcessorDependencies)depsField.GetValue(factory)!;
 
 #if NET8_0
@@ -58,31 +67,46 @@ public class InternalsCoverageTests {
 #elif NET9_0
         // EF Core 9 ctor: (bool useRelationalNulls, IReadOnlySet<string> parametersToConstantize)
         var parameters = new RelationalParameterBasedSqlProcessorParameters(
-            false, new HashSet<string>());
+            false,
+            new HashSet<string>()
+        );
         return new ParadeDbSqlNullabilityProcessor(deps, parameters);
 #else
         // EF Core 10 ctor: (bool useRelationalNulls, ParameterTranslationMode)
         var parameters = new RelationalParameterBasedSqlProcessorParameters(
-            false, ParameterTranslationMode.Constant);
+            false,
+            ParameterTranslationMode.Constant
+        );
         return new ParadeDbSqlNullabilityProcessor(deps, parameters);
 #endif
     }
 
-    private static SqlExpression InvokeVisitCustom(ParadeDbSqlNullabilityProcessor processor,
-        SqlExpression expr, bool allowOptimizedExpansion = false) {
+    private static SqlExpression InvokeVisitCustom(
+        ParadeDbSqlNullabilityProcessor processor,
+        SqlExpression expr,
+        bool allowOptimizedExpansion = false
+    )
+    {
         var method = typeof(ParadeDbSqlNullabilityProcessor).GetMethod(
             "VisitCustomSqlExpression",
-            BindingFlags.NonPublic | BindingFlags.Instance)!;
+            BindingFlags.NonPublic | BindingFlags.Instance
+        )!;
         var args = new object?[] { expr, allowOptimizedExpansion, null };
         return (SqlExpression)method.Invoke(processor, args)!;
     }
 
     [Fact]
-    public void NullabilityProcessor_ModifiedQueryExpression_keeps_instance_when_inner_unchanged() {
+    public void NullabilityProcessor_ModifiedQueryExpression_keeps_instance_when_inner_unchanged()
+    {
         var processor = CreateProcessor();
         var sql = Services().GetService<ISqlExpressionFactory>()!;
         var inner = sql.Constant("hello");
-        var expr = new ParadeDbModifiedQueryExpression(inner, "::pdb.boost(2)", inner.Type, inner.TypeMapping);
+        var expr = new ParadeDbModifiedQueryExpression(
+            inner,
+            "::pdb.boost(2)",
+            inner.Type,
+            inner.TypeMapping
+        );
 
         var result = InvokeVisitCustom(processor, expr);
 
@@ -91,13 +115,19 @@ public class InternalsCoverageTests {
     }
 
     [Fact]
-    public void NullabilityProcessor_NamedArgFunctionExpression_keeps_instance_when_unchanged() {
+    public void NullabilityProcessor_NamedArgFunctionExpression_keeps_instance_when_unchanged()
+    {
         var processor = CreateProcessor();
         var sql = Services().GetService<ISqlExpressionFactory>()!;
         var positional = sql.Constant("col");
         var namedValue = sql.Constant("<b>");
-        var expr = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [positional], [("start_tag", namedValue)], typeof(string), positional.TypeMapping);
+        var expr = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [positional],
+            [("start_tag", namedValue)],
+            typeof(string),
+            positional.TypeMapping
+        );
 
         var result = InvokeVisitCustom(processor, expr);
 
@@ -110,13 +140,19 @@ public class InternalsCoverageTests {
     /// "positional changed → rebuild" branch on <see cref="ParadeDbNamedArgFunctionExpression"/>.
     /// </summary>
     [Fact]
-    public void NullabilityProcessor_NamedArgFunctionExpression_rebuilds_when_positional_simplified() {
+    public void NullabilityProcessor_NamedArgFunctionExpression_rebuilds_when_positional_simplified()
+    {
         var processor = CreateProcessor();
         var sql = Services().GetService<ISqlExpressionFactory>()!;
         var positional = sql.IsNotNull(sql.Constant("hi"));
         var namedValue = sql.Constant("<b>");
-        var expr = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [positional], [("start_tag", namedValue)], typeof(string), namedValue.TypeMapping);
+        var expr = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [positional],
+            [("start_tag", namedValue)],
+            typeof(string),
+            namedValue.TypeMapping
+        );
 
         var result = InvokeVisitCustom(processor, expr);
 
@@ -126,13 +162,19 @@ public class InternalsCoverageTests {
     }
 
     [Fact]
-    public void NullabilityProcessor_NamedArgFunctionExpression_rebuilds_when_named_simplified() {
+    public void NullabilityProcessor_NamedArgFunctionExpression_rebuilds_when_named_simplified()
+    {
         var processor = CreateProcessor();
         var sql = Services().GetService<ISqlExpressionFactory>()!;
         var positional = sql.Constant("col");
         var namedValue = sql.IsNotNull(sql.Constant("hi"));
-        var expr = new ParadeDbNamedArgFunctionExpression("pdb.snippet",
-            [positional], [("flag", namedValue)], typeof(string), positional.TypeMapping);
+        var expr = new ParadeDbNamedArgFunctionExpression(
+            "pdb.snippet",
+            [positional],
+            [("flag", namedValue)],
+            typeof(string),
+            positional.TypeMapping
+        );
 
         var result = InvokeVisitCustom(processor, expr);
 
@@ -146,11 +188,17 @@ public class InternalsCoverageTests {
     /// around the new instance — otherwise downstream visitors keep seeing the stale child.
     /// </summary>
     [Fact]
-    public void NullabilityProcessor_ModifiedQueryExpression_rebuilds_when_inner_simplified() {
+    public void NullabilityProcessor_ModifiedQueryExpression_rebuilds_when_inner_simplified()
+    {
         var processor = CreateProcessor();
         var sql = Services().GetService<ISqlExpressionFactory>()!;
         var inner = sql.IsNotNull(sql.Constant("hi"));
-        var expr = new ParadeDbModifiedQueryExpression(inner, "::pdb.boost(2)", inner.Type, inner.TypeMapping);
+        var expr = new ParadeDbModifiedQueryExpression(
+            inner,
+            "::pdb.boost(2)",
+            inner.Type,
+            inner.TypeMapping
+        );
 
         var result = InvokeVisitCustom(processor, expr);
 
@@ -159,4 +207,3 @@ public class InternalsCoverageTests {
         Assert.Equal("::pdb.boost(2)", rebuilt.ModifierSuffix);
     }
 }
-

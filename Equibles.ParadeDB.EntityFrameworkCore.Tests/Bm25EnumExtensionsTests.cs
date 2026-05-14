@@ -6,7 +6,8 @@ namespace Equibles.ParadeDB.EntityFrameworkCore.Tests;
 /// Tests for <see cref="Bm25EnumExtensions"/> — every enum value must map to its pg_search
 /// string. <c>Unspecified</c> throws because the indexer expects an explicit mapping.
 /// </summary>
-public class Bm25EnumExtensionsTests {
+public class Bm25EnumExtensionsTests
+{
     // ── Bm25Tokenizer ─────────────────────────────────────────────────
 
     [Theory]
@@ -23,17 +24,23 @@ public class Bm25EnumExtensionsTests {
     [InlineData(Bm25Tokenizer.JapaneseLindera, "japanese_lindera")]
     [InlineData(Bm25Tokenizer.KoreanLindera, "korean_lindera")]
     [InlineData(Bm25Tokenizer.Jieba, "jieba")]
-    public void Tokenizer_maps_to_expected_pg_search_string(Bm25Tokenizer tokenizer, string expected) {
+    public void Tokenizer_maps_to_expected_pg_search_string(
+        Bm25Tokenizer tokenizer,
+        string expected
+    )
+    {
         Assert.Equal(expected, tokenizer.ToParadeDbString());
     }
 
     [Fact]
-    public void Tokenizer_Unspecified_throws() {
+    public void Tokenizer_Unspecified_throws()
+    {
         Assert.Throws<ArgumentException>(() => Bm25Tokenizer.Unspecified.ToParadeDbString());
     }
 
     [Fact]
-    public void Tokenizer_out_of_range_throws() {
+    public void Tokenizer_out_of_range_throws()
+    {
         var bogus = (Bm25Tokenizer)999;
         Assert.Throws<ArgumentOutOfRangeException>(() => bogus.ToParadeDbString());
     }
@@ -61,17 +68,20 @@ public class Bm25EnumExtensionsTests {
     [InlineData(Bm25Language.Swedish, "Swedish")]
     [InlineData(Bm25Language.Tamil, "Tamil")]
     [InlineData(Bm25Language.Turkish, "Turkish")]
-    public void Language_maps_to_expected_pg_search_string(Bm25Language language, string expected) {
+    public void Language_maps_to_expected_pg_search_string(Bm25Language language, string expected)
+    {
         Assert.Equal(expected, language.ToParadeDbString());
     }
 
     [Fact]
-    public void Language_Unspecified_throws() {
+    public void Language_Unspecified_throws()
+    {
         Assert.Throws<ArgumentException>(() => Bm25Language.Unspecified.ToParadeDbString());
     }
 
     [Fact]
-    public void Language_out_of_range_throws() {
+    public void Language_out_of_range_throws()
+    {
         var bogus = (Bm25Language)999;
         Assert.Throws<ArgumentOutOfRangeException>(() => bogus.ToParadeDbString());
     }
@@ -82,17 +92,20 @@ public class Bm25EnumExtensionsTests {
     [InlineData(Bm25Record.Basic, "basic")]
     [InlineData(Bm25Record.Freq, "freq")]
     [InlineData(Bm25Record.Position, "position")]
-    public void Record_maps_to_expected_pg_search_string(Bm25Record record, string expected) {
+    public void Record_maps_to_expected_pg_search_string(Bm25Record record, string expected)
+    {
         Assert.Equal(expected, record.ToParadeDbString());
     }
 
     [Fact]
-    public void Record_Unspecified_throws() {
+    public void Record_Unspecified_throws()
+    {
         Assert.Throws<ArgumentException>(() => Bm25Record.Unspecified.ToParadeDbString());
     }
 
     [Fact]
-    public void Record_out_of_range_throws() {
+    public void Record_out_of_range_throws()
+    {
         var bogus = (Bm25Record)999;
         Assert.Throws<ArgumentOutOfRangeException>(() => bogus.ToParadeDbString());
     }

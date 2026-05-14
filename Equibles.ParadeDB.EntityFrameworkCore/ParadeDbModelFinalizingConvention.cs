@@ -8,40 +8,66 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace Equibles.ParadeDB.EntityFrameworkCore;
 
-public sealed class ParadeDbModelFinalizingConvention : IModelFinalizingConvention {
-    public void ProcessModelFinalizing(IConventionModelBuilder modelBuilder, IConventionContext<IConventionModelBuilder> context) {
+public sealed class ParadeDbModelFinalizingConvention : IModelFinalizingConvention
+{
+    public void ProcessModelFinalizing(
+        IConventionModelBuilder modelBuilder,
+        IConventionContext<IConventionModelBuilder> context
+    )
+    {
         var hasBm25Index = false;
 
-        foreach (var entityType in modelBuilder.Metadata.GetEntityTypes()) {
+        foreach (var entityType in modelBuilder.Metadata.GetEntityTypes())
+        {
             var attribute = entityType.ClrType.GetCustomAttribute<Bm25IndexAttribute>();
 
             ValidateNoOrphanFieldAttributes(entityType, attribute);
 
-            if (attribute == null) continue;
+            if (attribute == null)
+                continue;
 
-            var indexBuilder = entityType.Builder.HasIndex(attribute.Columns, fromDataAnnotation: true);
-            if (indexBuilder == null) continue;
+            var indexBuilder = entityType.Builder.HasIndex(
+                attribute.Columns,
+                fromDataAnnotation: true
+            );
+            if (indexBuilder == null)
+                continue;
 
             indexBuilder.HasAnnotation("Npgsql:IndexMethod", "bm25", fromDataAnnotation: true);
 
             var keyProperty = entityType.FindProperty(attribute.KeyField);
             var keyColumnName = keyProperty?.GetColumnName() ?? attribute.KeyField;
-            indexBuilder.HasAnnotation("Npgsql:StorageParameter:key_field", keyColumnName, fromDataAnnotation: true);
+            indexBuilder.HasAnnotation(
+                "Npgsql:StorageParameter:key_field",
+                keyColumnName,
+                fromDataAnnotation: true
+            );
 
             BuildFieldTypeAnnotations(entityType, attribute, indexBuilder);
 
             hasBm25Index = true;
         }
 
-        if (hasBm25Index) {
-            modelBuilder.HasAnnotation("Npgsql:PostgresExtension:pg_search", ",,", fromDataAnnotation: true);
+        if (hasBm25Index)
+        {
+            modelBuilder.HasAnnotation(
+                "Npgsql:PostgresExtension:pg_search",
+                ",,",
+                fromDataAnnotation: true
+            );
         }
     }
 
-    private static void ValidateNoOrphanFieldAttributes(IConventionEntityType entityType, Bm25IndexAttribute attribute) {
-        foreach (var property in entityType.GetProperties()) {
+    private static void ValidateNoOrphanFieldAttributes(
+        IConventionEntityType entityType,
+        Bm25IndexAttribute attribute
+    )
+    {
+        foreach (var property in entityType.GetProperties())
+        {
             var propertyInfo = property.PropertyInfo;
-            if (propertyInfo == null) continue;
+            if (propertyInfo == null)
+                continue;
 
             var hasFieldAttr =
                 propertyInfo.GetCustomAttribute<Bm25TextAttribute>() != null
@@ -50,62 +76,85 @@ public sealed class ParadeDbModelFinalizingConvention : IModelFinalizingConventi
                 || propertyInfo.GetCustomAttribute<Bm25DateTimeAttribute>() != null
                 || propertyInfo.GetCustomAttribute<Bm25JsonAttribute>() != null;
 
-            if (!hasFieldAttr) continue;
+            if (!hasFieldAttr)
+                continue;
 
-            if (attribute == null) {
+            if (attribute == null)
+            {
                 throw new InvalidOperationException(
-                    $"Property '{entityType.ClrType.Name}.{property.Name}' has a BM25 field attribute, " +
-                    "but the entity has no [Bm25Index] attribute.");
+                    $"Property '{entityType.ClrType.Name}.{property.Name}' has a BM25 field attribute, "
+                        + "but the entity has no [Bm25Index] attribute."
+                );
             }
 
-            if (Array.IndexOf(attribute.Columns, property.Name) < 0) {
+            if (Array.IndexOf(attribute.Columns, property.Name) < 0)
+            {
                 throw new InvalidOperationException(
-                    $"Property '{entityType.ClrType.Name}.{property.Name}' has a BM25 field attribute, " +
-                    "but it is not listed in the [Bm25Index] columns.");
+                    $"Property '{entityType.ClrType.Name}.{property.Name}' has a BM25 field attribute, "
+                        + "but it is not listed in the [Bm25Index] columns."
+                );
             }
         }
     }
 
-    private static void BuildFieldTypeAnnotations(IConventionEntityType entityType, Bm25IndexAttribute attribute,
-        IConventionIndexBuilder indexBuilder) {
+    private static void BuildFieldTypeAnnotations(
+        IConventionEntityType entityType,
+        Bm25IndexAttribute attribute,
+        IConventionIndexBuilder indexBuilder
+    )
+    {
         var textFields = new JsonObject();
         var numericFields = new JsonObject();
         var booleanFields = new JsonObject();
         var datetimeFields = new JsonObject();
         var jsonFields = new JsonObject();
 
-        foreach (var propertyName in attribute.Columns) {
-            if (propertyName == attribute.KeyField) continue;
+        foreach (var propertyName in attribute.Columns)
+        {
+            if (propertyName == attribute.KeyField)
+                continue;
 
             var property = entityType.FindProperty(propertyName);
             var propertyInfo = property?.PropertyInfo;
-            if (propertyInfo == null) continue;
+            if (propertyInfo == null)
+                continue;
 
             var columnName = property.GetColumnName() ?? propertyName;
 
             var textAttr = propertyInfo.GetCustomAttribute<Bm25TextAttribute>();
-            if (textAttr != null) {
-                textFields[columnName] = Bm25StorageParameterBuilder.BuildTextField(textAttr, propertyName);
+            if (textAttr != null)
+            {
+                textFields[columnName] = Bm25StorageParameterBuilder.BuildTextField(
+                    textAttr,
+                    propertyName
+                );
                 continue;
             }
             var numAttr = propertyInfo.GetCustomAttribute<Bm25NumericAttribute>();
-            if (numAttr != null) {
+            if (numAttr != null)
+            {
                 numericFields[columnName] = Bm25StorageParameterBuilder.BuildNumericField(numAttr);
                 continue;
             }
             var boolAttr = propertyInfo.GetCustomAttribute<Bm25BooleanAttribute>();
-            if (boolAttr != null) {
+            if (boolAttr != null)
+            {
                 booleanFields[columnName] = Bm25StorageParameterBuilder.BuildBooleanField(boolAttr);
                 continue;
             }
             var dtAttr = propertyInfo.GetCustomAttribute<Bm25DateTimeAttribute>();
-            if (dtAttr != null) {
+            if (dtAttr != null)
+            {
                 datetimeFields[columnName] = Bm25StorageParameterBuilder.BuildDateTimeField(dtAttr);
                 continue;
             }
             var jsonAttr = propertyInfo.GetCustomAttribute<Bm25JsonAttribute>();
-            if (jsonAttr != null) {
-                jsonFields[columnName] = Bm25StorageParameterBuilder.BuildJsonField(jsonAttr, propertyName);
+            if (jsonAttr != null)
+            {
+                jsonFields[columnName] = Bm25StorageParameterBuilder.BuildJsonField(
+                    jsonAttr,
+                    propertyName
+                );
             }
         }
 
@@ -116,11 +165,18 @@ public sealed class ParadeDbModelFinalizingConvention : IModelFinalizingConventi
         AddFieldGroupParameter(indexBuilder, "json_fields", jsonFields);
     }
 
-    private static void AddFieldGroupParameter(IConventionIndexBuilder indexBuilder, string name, JsonObject group) {
-        if (group.Count == 0) return;
+    private static void AddFieldGroupParameter(
+        IConventionIndexBuilder indexBuilder,
+        string name,
+        JsonObject group
+    )
+    {
+        if (group.Count == 0)
+            return;
         indexBuilder.HasAnnotation(
             $"Npgsql:StorageParameter:{name}",
             Bm25StorageParameterBuilder.Serialize(group),
-            fromDataAnnotation: true);
+            fromDataAnnotation: true
+        );
     }
 }
