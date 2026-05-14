@@ -500,6 +500,18 @@ All of this is translated into standard EF Core migrations — no manual SQL req
 
 LINQ methods on `EF.Functions` are translated to SQL via `IMethodCallTranslatorPlugin`. The mapping for each method is shown alongside its example in the [Querying](#querying) section above.
 
+## Contributing
+
+The repo uses [CSharpier](https://csharpier.com) for formatting and a [`prek`](https://github.com/j178/prek) (or `pre-commit`-compatible) hook bundle for the usual hygiene checks (`end-of-file-fixer`, `trailing-whitespace`, `markdownlint`, `codespell`, etc.).
+
+```bash
+dotnet tool restore                 # installs CSharpier locally
+prek install -f                     # installs the pre-commit hooks
+prek run --all-files                # one-off sweep over the whole repo
+```
+
+CI runs the same checks (CSharpier check + `-warnaserror` build) in the `lint` job, so even contributors who skip the local hooks get caught at PR time.
+
 ## License
 
 [MIT](LICENSE)
